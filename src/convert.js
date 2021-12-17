@@ -1,4 +1,4 @@
-const validate = require('./validate.js');
+const validate = require('./validate.js').validateURL;
 const _getURL = require('./request/url.js');
 
 function getID(url){
