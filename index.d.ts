@@ -9,7 +9,7 @@ interface downloadOptions{
     type: streamType;
     highWaterMark: number;
     quality: quality;
-};
+}
 
 interface Stream{
     stream: Readable;
@@ -37,6 +37,7 @@ interface YouTubeData{
     availableCountries: [string];
     category: string;
     thumbnails: [{url: string, width: number, height: number}];
+		default_thumbnail: {url: string, width: number, height: number};
     uploaded: string;
     duration: number;
     views: number;
@@ -65,6 +66,7 @@ interface YouTubeData{
         signatureCipher: string;
     }];
     html5player: string;
+		userAgent: string;
 }
 
 interface Video{
@@ -123,3 +125,6 @@ export declare function search(query: string) : Promise<[Video]>;
  * @param options 
  */
 export declare function stream(info: download, options: downloadOptions) : Promise<Stream>;
+
+declare var cookie: string;
+declare var userAgent: string;
