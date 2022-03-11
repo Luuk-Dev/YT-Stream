@@ -19,7 +19,7 @@ function request(_url, options){
     const agent = new prreq.Agent({
       keepAlive: true,
       keepAliveMsecs: (Math.round(Math.random() * 10) + 10),
-      timeout: 1000
+      timeout: 2000
     });
 
     const http_options = {
