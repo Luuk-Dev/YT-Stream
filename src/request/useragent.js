@@ -11,7 +11,7 @@ const userAgent = [
 
 function getRandomUserAgent(){
     const maxIndex = userAgent.length - 1;
-		const i = Math.round(Math.random() * maxIndex);
+    const i = Math.round(Math.random() * maxIndex);
     return userAgent[i];
 }
 
