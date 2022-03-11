@@ -1,9 +1,9 @@
 const validate = require('./validate.js').validateURL;
 const _getURL = require('./request/url.js');
 
-function getID(url){
+function getID(ytstream, url){
   if(typeof url !== 'string') throw new Error(`URL is not a string`);
-  if(!validate(url)) return undefined;
+  if(!validate(ytstream, url)) return undefined;
 
   const parsed = _getURL(url);
   
@@ -19,15 +19,15 @@ function getID(url){
     else ytid = null
   } else ytid = null;
 
-  let reg = /^[A-Za-z0-9-_]*$/;
+  let reg = /^[A-Za-z0-9_-]*$/;
   if(!reg.test(ytid)) return undefined;
   return ytid;
 }
 
-function getURL(id){
+function getURL(ytstream, id){
   if(typeof id !== 'string') throw new Error(`ID is not a string`);
 
-  let reg = /^[A-Za-z0-9-]*$/;
+  let reg = /^[A-Za-z0-9_-]*$/;
   if(!reg.test(id)) return undefined;
 
   return `https://www.youtube.com/watch?v=${id}`;
