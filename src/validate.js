@@ -1,7 +1,7 @@
 const validate = require('./request/url.js');
 
 
-function validateID(id) {
+function validateID(ytstream, id) {
   if (typeof id !== 'string') return false;
   let reg = /^[A-Za-z0-9-_]*$/;
   if (!reg.test(id)) return false;
@@ -9,7 +9,7 @@ function validateID(id) {
   return true;
 }
 
-function validateURL(url) {
+function validateURL(ytstream, url) {
   if (typeof url !== 'string') return false;
 
   const _url = validate(url);
@@ -33,7 +33,7 @@ function validateURL(url) {
     ytid = _url.searchParams.get('v');
   }
 
-  if(!validateID(ytid)) return false
+  if(!validateID(ytstream, ytid)) return false
   else return true;
 }
 
