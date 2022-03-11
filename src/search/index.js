@@ -5,7 +5,7 @@ const userAgent = require('../request/useragent.js').getRandomUserAgent;
 function defaultExtractor(response){
   var res = response;
   res = res.split('var ytInitialData = ')[1];
-  if(!res) return console.log(response);
+  if(!res) return reject(`The YouTube page has no initial data response`);
 
   res = res.split(';</script>')[0];
 
@@ -28,7 +28,7 @@ function defaultExtractor(response){
   return results;
 }
 
-function search(query, options){
+function search(ytstream, query, options){
   if(typeof query !== 'string') throw new Error(`Query must be a string`);
 
   var _options = options || {type: 'music'};
@@ -41,6 +41,10 @@ function search(query, options){
     'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8,hi;q=0.7',
     'user-agent': userAgent(),
   };
+
+  if(typeof ytstream.cookie === 'string'){
+    headers['cookie'] = ytstream.cookie;
+  }
 
   return new Promise((resolve, reject) => {
     request(url, {
