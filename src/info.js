@@ -3,37 +3,32 @@ const _url = require('./request/url.js');
 const request = require('./request/index.js').request;
 const YouTubeData = require('./classes/ytdata.js');
 const userAgent = require('./request/useragent.js').getRandomUserAgent;
+const { getID } = require('./convert.js');
 
-function getytID(url){
-  var ytid = null;
-  const parsed = _url(url);
-  if(parsed.pathname.toLowerCase().startsWith('/watch')){
-    ytid = parsed.searchParams.get('v') || null;
-  } else if(parsed.pathname.toLowerCase().startsWith('/v/')){
-    ytid = parsed.pathname.toLowerCase().split('/v/').join('');
-  } else if(parsed.pathname.toLowerCase().startsWith('/shorts/')){
-    ytid = parsed.pathname.toLowerCase().split('/shorts/').join('');
-  }
-  return ytid;
-}
+function getHTML5player(response){
+  let html5playerRes =
+    /<script\s+src="([^"]+)"(?:\s+type="text\/javascript")?\s+name="player_ias\/base"\s*>|"jsUrl":"([^"]+)"/
+      .exec(response);
+  return html5playerRes ? html5playerRes[1] || html5playerRes[2] : null;
+};
 
-function getInfo(url){
+function getInfo(ytstream, url){
   return new Promise((resolve, reject) => {
     if(typeof url !== 'string') throw new Error(`URL is not a string`);
 
-    const validation = validate(url);
+    const validation = validate(ytstream, url);
     if(!validation) throw new Error(`Invalid YouTube URL`);
 
     var ytid = null;
     const parsed = _url(url);
-    if(['youtube.com', 'music.youtube.com'].includes(parsed.hostname.toLowerCase().split('www.').join(''))) ytid = getytID(url);
+    if(['youtube.com', 'music.youtube.com'].includes(parsed.hostname.toLowerCase().split('www.').join(''))) ytid = getID(ytstream, url);
     else if(parsed.hostname.toLowerCase().split('www.').join('') === `youtu.be`){
       if(parsed.pathname.toLowerCase().startsWith('/watch')){
         const newurl = 'https://www.youtube.com'+parsed.pathname+parsed.search;
-        ytid = getytID(newurl);
+        ytid = getID(ytstream, newurl);
       } else {
         const newurl = `https://www.youtube.com/watch?v=`+parsed.pathname.split('/').join('');
-        ytid = getytID(newurl);
+        ytid = getID(ytstream, newurl);
       }
     }
 
@@ -41,17 +36,24 @@ function getInfo(url){
 
     const yturl = `https://www.youtube.com/watch?v=${ytid}&has_verified=1`;
 
+		const userA = typeof ytstream.userAgent === 'string' ? ytstream.userAgent : userAgent();
+
     let headers = { 
       'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8,hi;q=0.7',
-      'user-agent' : userAgent(),
+      'user-agent' : userA,
     };
+
+    if(typeof ytstream.cookie === 'string'){
+      headers['cookie'] = ytstream.cookie;
+    }
 
     request(yturl, {
       headers: headers
     }).then(response => {
       if(response.indexOf(`Our systems have detected unusual traffic from your computer network.`) >= 0) return reject(`YouTube has detected that you are a bot. Try it later again.`);
       var res = response.split('var ytInitialPlayerResponse = ')[1];
-      const html5player = `https://www.youtube.com${response.split('"jsUrl":"')[1].split('"')[0]}`
+			var html5path = getHTML5player(response);
+      const html5player = typeof html5path === 'string' ? `https://www.youtube.com${html5path}` : null;
       if(!res){
         reject(`The YouTube song has no initial player response`);
         return;
@@ -71,7 +73,7 @@ function getInfo(url){
         var error = data.playabilityStatus.errorScreen.playerErrorMessageRenderer ? data.playabilityStatus.errorScreen.playerErrorMessageRenderer.reason.simpleText : data.playabilityStatus.errorScreen.playerKavRenderer.reason.simpleText;
 
         reject(`Error while getting video url\n${error}`);
-      } else resolve(new YouTubeData(data, html5player));
+      } else resolve(new YouTubeData(data, html5player, userA));
     }).catch(err => {
       reject(err);
     })
