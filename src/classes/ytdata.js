@@ -1,5 +1,5 @@
 class YouTubeData{
-    constructor(data, html5player){
+    constructor(data, html5player, userA){
         var videoDetails = data.videoDetails;
         var microformat = data.microformat.playerMicroformatRenderer;
         this.id = videoDetails.videoId,
@@ -28,6 +28,7 @@ class YouTubeData{
 
         this.formats.push(...(data.streamingData.formats || []));
         this.formats.push(...(data.streamingData.adaptiveFormats || []));
+		this.userAgent = userA;
     }
 }
 
