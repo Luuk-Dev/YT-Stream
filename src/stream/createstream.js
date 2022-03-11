@@ -73,31 +73,32 @@ function getStreamURL(info, options){
     });
 }
 
-function stream(info, options){
+function stream(ytstream, info, options){
     if(typeof info !== 'object' && typeof info !== 'string') throw new Error(`Info is a required parameter and must be an object or a string`);
-    var _options = options || {};
+    var _options = typeof options === 'object' ? options : {};
     var _info = info;
     return new Promise(async (resolve, reject) => {
         var stream_res;
         if(typeof info === 'string'){
-        if(!validate(info)) return reject(`URL is not a valid YouTube URL`);
-        _info = await getInfo(info);
-        const _ci = await cipher.format_decipher(_info.formats, _info.html5player);
-        _info.formats = _ci;
-        stream_res = await getStreamURL(_info, _options);
+          if(!validate(ytstream, info)) return reject(`URL is not a valid YouTube URL`);
+          _info = await getInfo(ytstream, info);
+          const _ci = await cipher.format_decipher(_info.formats, _info.html5player);
+          _info.formats = _ci;
+          stream_res = await getStreamURL(_info, _options);
         } else if(typeof info === `object`){
-        const _ci = await cipher.format_decipher(_info.formats, _info.html5player);
-        _info.formats = _ci;
-        stream_res = await getStreamURL(_info, _options);
+          const _ci = await cipher.format_decipher(_info.formats, _info.html5player);
+          _info.formats = _ci;
+          stream_res = await getStreamURL(_info, _options);
         } else return reject(`Invalid info has been parsed to the stream function`);
-        const stream = new Stream(stream_res.url, {
+          const stream = new Stream(ytstream, stream_res.url, {
             highWaterMark: _options['highWaterMark'] || undefined,
             duration: _info.duration,
             contentLength: stream_res.contentLength,
             type: stream_res.type,
             quality: stream_res.quality,
             video_url: _info.url,
-            req_type: stream_res.req_type
+            req_type: stream_res.req_type,
+            ytstream: ytstream
         });
         resolve(stream);
     });
