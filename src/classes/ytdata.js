@@ -28,7 +28,7 @@ class YouTubeData{
 
         this.formats.push(...(data.streamingData.formats || []));
         this.formats.push(...(data.streamingData.adaptiveFormats || []));
-		this.userAgent = userA;
+	this.userAgent = userA;
     }
 }
 
