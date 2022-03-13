@@ -24,7 +24,8 @@ class Video{
 
         if(data.viewCountText){
             this.viewsText = data.viewCountText.simpleText;
-            this.views = Number(data.viewCountText.simpleText.toLowerCase().split(',').join('').split(' ')[0]);
+            if(data.viewCountText.simpleText) this.views = Number(data.viewCountText.simpleText.toLowerCase().split(',').join('').split(' ')[0]);
+            else this.viewsText = 'Unknown views';
         } else {
             this.viewText = 'Unknown views';
             this.views = 0;
