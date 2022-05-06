@@ -22,6 +22,7 @@ interface Stream{
     type: string;
     req_type: string;
     per_sec_bytes: number;
+    info : YouTubeData;
 }
 
 interface YouTubeData{
@@ -29,18 +30,17 @@ interface YouTubeData{
     url: string;
     author: string;
     title: string;
-    description: {
-        short: string;
-        full: string;
-    }
+    description: string;
+    embedUrl: string;
     familySafe: boolean;
     availableCountries: [string];
     category: string;
     thumbnails: [{url: string, width: number, height: number}];
-		default_thumbnail: {url: string, width: number, height: number};
+	default_thumbnail: {url: string, width: number, height: number};
     uploaded: string;
     duration: number;
     views: number;
+    viewsText: string;
     channel: {
         author: string;
         id: string;
@@ -66,7 +66,8 @@ interface YouTubeData{
         signatureCipher: string;
     }];
     html5player: string;
-		userAgent: string;
+	userAgent: string;
+    cookie: string | null;
 }
 
 interface Video{
@@ -81,6 +82,8 @@ interface Video{
     viewsText: string;
     views: number;
     thumbnail: string;
+    userAgent: string;
+    cookie: string | null;
 }
 
 /**
