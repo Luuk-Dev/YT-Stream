@@ -73,7 +73,7 @@ function getInfo(ytstream, url){
         var error = data.playabilityStatus.errorScreen.playerErrorMessageRenderer ? data.playabilityStatus.errorScreen.playerErrorMessageRenderer.reason.simpleText : data.playabilityStatus.errorScreen.playerKavRenderer.reason.simpleText;
 
         reject(`Error while getting video url\n${error}`);
-      } else resolve(new YouTubeData(data, html5player, userA));
+      } else resolve(new YouTubeData(data, html5player, headers));
     }).catch(err => {
       reject(err);
     })
