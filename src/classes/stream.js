@@ -32,12 +32,13 @@ function parseVideo(formats){
 }
 
 class Stream{
-    constructor(ytstream, url, options){
+    constructor(ytstream, url, options, info){
         this.stream = new Readable({highWaterMark: (options.highWaterMark || 1048576 * 32), read() {}}); 
         this.ytstream = ytstream;
         this.url = url;
         this.video_url = options.video_url;
         this.quality = options.quality;
+        this.info = info;
 
         this.bytes_count = 0;
         this.contentLength = options.contentLength;
