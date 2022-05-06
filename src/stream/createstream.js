@@ -1,6 +1,7 @@
 const validate = require('../validate.js').validateURL;
 const getInfo = require('../info.js').getInfo;
 const Stream = require('../classes/stream.js');
+const Data = require('../classes/ytdata.js');
 const cipher = require('./decipher.js');
 
 function parseAudio(formats){
@@ -85,7 +86,7 @@ function stream(ytstream, info, options){
           const _ci = await cipher.format_decipher(_info.formats, _info.html5player);
           _info.formats = _ci;
           stream_res = await getStreamURL(_info, _options);
-        } else if(typeof info === `object`){
+        } else if(info instanceof Data){
           const _ci = await cipher.format_decipher(_info.formats, _info.html5player);
           _info.formats = _ci;
           stream_res = await getStreamURL(_info, _options);
@@ -99,7 +100,7 @@ function stream(ytstream, info, options){
             video_url: _info.url,
             req_type: stream_res.req_type,
             ytstream: ytstream
-        });
+        }, _info);
         resolve(stream);
     });
 }
