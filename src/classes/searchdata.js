@@ -1,11 +1,17 @@
 class Video{
-    constructor(data){
+    constructor(data, headers){
         this.id = data.videoId;
         this.url = `https://www.youtube.com/watch?v=${this.id}`;
         this.title = data.title.runs[0].text;
         this.author = data.ownerText.runs[0].text;
         this.channelId = data.ownerText.runs[0].navigationEndpoint.browseEndpoint.browseId;
         this.channelURL = `https://www.youtube.com${data.ownerText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url}`;
+        this.userAgent = headers['user-agent'];
+        if(typeof headers['cookie'] === 'string'){
+            this.cookie = headers['cookie'];
+        } else {
+            this.cookie = null;
+        }
 
         if(data.lengthText){
             this.lengthText = data.lengthText.simpleText;
