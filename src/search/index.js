@@ -2,7 +2,7 @@ const request = require('../request/index.js').request;
 const SearchData = require('../classes/searchdata.js');
 const userAgent = require('../request/useragent.js').getRandomUserAgent;
 
-function defaultExtractor(response){
+function defaultExtractor(response, headers){
   var res = response;
   res = res.split('var ytInitialData = ')[1];
   if(!res) return reject(`The YouTube page has no initial data response`);
@@ -19,7 +19,7 @@ function defaultExtractor(response){
     const data = videos[i].videoRenderer;
     if(data){
       if(data.videoId){
-        const video = new SearchData(data);
+        const video = new SearchData(data, headers);
         results.push(video);
       }
     }
@@ -39,8 +39,13 @@ function search(ytstream, query, options){
 
   let headers = { 
     'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8,hi;q=0.7',
-    'user-agent': userAgent(),
   };
+
+  if(typeof ytstream.userAgent === 'string'){
+    headers['user-agent'] = ytstream.userAgent;
+  } else {
+    headers['user-agent'] = userAgent();
+  }
 
   if(typeof ytstream.cookie === 'string'){
     headers['cookie'] = ytstream.cookie;
@@ -50,7 +55,7 @@ function search(ytstream, query, options){
     request(url, {
       headers: headers
     }).then(response => {
-      resolve(defaultExtractor(response));
+      resolve(defaultExtractor(response, headers));
     }).catch(err => {
       reject(err);
     });
