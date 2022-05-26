@@ -52,7 +52,7 @@ function requestCallback(_url, options){
         if(typeof _url !== 'string') return reject(`URL is not a string`);
   
         const url = _validate(_url);
-        if(!url) reject(`Invalid URL`);
+        if(!(url instanceof URL)) reject(`Invalid URL`);
 
         const protocol = url.protocol.split(':').join('');
         const prreq = requestType[protocol];
