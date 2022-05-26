@@ -48,16 +48,19 @@ class Stream{
         this.req_type = options.req_type;
 
         this.per_sec_byte = Math.ceil(this.contentLength / this.duration);
+        this.retryCount = 0;
         this.loop();
     }
     async retry(){
-        const info = await getInfo(this.video_url);
+        const info = await getInfo(this.ytstream, this.video_url);
         
         const _ci = await cipher.format_decipher(info.formats, info.html5player);
 
         info.formats = _ci;
 
-        const audioFormat = this.req_type === 'video' ? parseVideo(info.formats) : parseAudio(info.formats);
+        var audioFormat = this.req_type === 'video' ? parseVideo(info.formats) : parseAudio(info.formats);
+
+        if(audioFormat.length === 0) audioFormat = this.req_type === 'video' ? parseAudio(info.formats) : parseVideo(info.formats);
 
         this.url = typeof this.quality === 'number' ? (audioFormat[this.quality] ? audioFormat[this.quality].url : audioFormat[audioFormat.length - 1].url) : audioFormat[0].url;
         this.loop();
@@ -71,7 +74,12 @@ class Stream{
             }
         }).then(stream => {
             if(Number(stream.statusCode) >= 400){
-                return this.retry();
+                if(this.retryCount === 10){
+                    return;
+                } else {
+                    ++this.retryCount;
+                    return this.retry();
+                }
             }
             stream.on('data', chunk => {
                 this.bytes_count += chunk.length;
