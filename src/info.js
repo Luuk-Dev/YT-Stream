@@ -14,7 +14,7 @@ function getHTML5player(response){
 
 function getInfo(ytstream, url){
   return new Promise((resolve, reject) => {
-    if(typeof url !== 'string') throw new Error(`URL is not a string`);
+    if(typeof url !== 'string') throw new Error(`URL is not a string ${typeof url}`);
 
     const validation = validate(ytstream, url);
     if(!validation) throw new Error(`Invalid YouTube URL`);
