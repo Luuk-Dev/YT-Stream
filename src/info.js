@@ -14,7 +14,7 @@ function getHTML5player(response){
 
 function getInfo(ytstream, url){
   return new Promise((resolve, reject) => {
-    if(typeof url !== 'string') throw new Error(`URL is not a string ${typeof url}`);
+    if(typeof url !== 'string') throw new Error(`URL is not a string`);
 
     const validation = validate(ytstream, url);
     if(!validation) throw new Error(`Invalid YouTube URL`);
@@ -63,11 +63,13 @@ function getInfo(ytstream, url){
         reject(`The YouTube song has no initial player response`);
         return;
       }
-      res = res.split(/;\s*(var|const|let)/)[0];
+      res = res.split(`\\"`).join("");
+      res = res.split(`,"interpreterSafeScript"`)[0];
       if(!res){
         reject(`The YouTube song has no initial player response`);
         return;
       }
+      res = res.split(`}}}};`)[0] + `}}}}`;
       var data = JSON.parse(res);
       if (data.playabilityStatus.status !== 'OK'){
         var error = data.playabilityStatus.errorScreen.playerErrorMessageRenderer ? data.playabilityStatus.errorScreen.playerErrorMessageRenderer.reason.simpleText : data.playabilityStatus.errorScreen.playerKavRenderer.reason.simpleText;
