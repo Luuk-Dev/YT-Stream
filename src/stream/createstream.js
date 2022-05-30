@@ -10,7 +10,7 @@ function parseAudio(formats){
         var format = formats[i];
         const type = format.mimeType;
         if(type.startsWith('audio')){
-            format.codec = type.split('codecs="')[1].split('"')[0];
+            format.codec = type.split('codecs=')[1].split('"')[0];
             format.container = type.split('audio/')[1].split(';')[0];
             audio.push(format);
         }
@@ -24,7 +24,7 @@ function parseVideo(formats){
         var format = formats[i];
         const type = format.mimeType;
         if(type.startsWith('video')){
-            format.codec = type.split('codecs="')[1].split('"')[0];
+            format.codec = type.split('codecs=')[1].split('"')[0];
             format.container = type.split('video/')[1].split(';')[0];
             video.push(format);
         }
@@ -37,7 +37,11 @@ function getStreamURL(info, options){
         const formats = info.formats;
         var selectedFormat = null;
         var _options = options || {};
-        const vid = _options['type'] === 'video' ? parseVideo(formats) : parseAudio(formats);
+        var vid = _options['type'] === 'video' ? parseVideo(formats) : parseAudio(formats);
+
+        if(vid.length === 0) vid = _options['type'] === 'video' ? parseAudio(formats) : parseVideo(formats);
+
+        if(vid.length === 0) return reject(`There were no playable formats found`);
 
         _options['quality'] = typeof _options['quality'] === 'string' ? _options['quality'].toLowerCase() : _options['quality'];
         if(typeof _options['quality'] !== 'number'){
@@ -81,17 +85,25 @@ function stream(ytstream, info, options){
     return new Promise(async (resolve, reject) => {
         var stream_res;
         if(typeof info === 'string'){
-          if(!validate(ytstream, info)) return reject(`URL is not a valid YouTube URL`);
-          _info = await getInfo(ytstream, info);
-          const _ci = await cipher.format_decipher(_info.formats, _info.html5player);
-          _info.formats = _ci;
-          stream_res = await getStreamURL(_info, _options);
+            if(!validate(ytstream, info)) return reject(`URL is not a valid YouTube URL`);
+            _info = await getInfo(ytstream, info);
+            const _ci = await cipher.format_decipher(_info.formats, _info.html5player);
+            _info.formats = _ci;
+            try {
+                stream_res = await getStreamURL(_info, _options);
+            } catch (err) {
+                return reject(err);
+            }
         } else if(info instanceof Data){
-          const _ci = await cipher.format_decipher(_info.formats, _info.html5player);
-          _info.formats = _ci;
-          stream_res = await getStreamURL(_info, _options);
+            const _ci = await cipher.format_decipher(_info.formats, _info.html5player);
+            _info.formats = _ci;
+            try {
+                stream_res = await getStreamURL(_info, _options);
+            } catch (err) {
+                return reject(err);
+            }
         } else return reject(`Invalid info has been parsed to the stream function`);
-          const stream = new Stream(ytstream, stream_res.url, {
+            const stream = new Stream(ytstream, stream_res.url, {
             highWaterMark: _options['highWaterMark'] || undefined,
             duration: _info.duration,
             contentLength: stream_res.contentLength,
