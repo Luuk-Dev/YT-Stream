@@ -9,7 +9,7 @@ function parseAudio(formats){
         var format = formats[i];
         const type = format.mimeType;
         if(type.startsWith('audio')){
-            format.codec = type.split('codecs="')[1].split('"')[0];
+            format.codec = type.split('codecs=')[1].split('"')[0];
             format.container = type.split('audio/')[1].split(';')[0];
             audio.push(format);
         }
@@ -23,7 +23,7 @@ function parseVideo(formats){
         var format = formats[i];
         const type = format.mimeType;
         if(type.startsWith('video')){
-            format.codec = type.split('codecs="')[1].split('"')[0];
+            format.codec = type.split('codecs=')[1].split('"')[0];
             format.container = type.split('video/')[1].split(';')[0];
             video.push(format);
         }
