@@ -17,10 +17,10 @@ class YouTubeData{
         this.duration = Number(videoDetails.lengthSeconds);
         this.views = Number(videoDetails.viewCount);
 
-        var viewsText = Number(videoDetails.lengthSeconds).toString();
+        var viewsText = String(videoDetails.viewCount);
         viewsText = viewsText.split('').reverse();
-        viewsText = viewsText.reduce((arr, number, index) => {
-            if((index + 1) % 3 === 0){
+        viewsText = viewsText.reduce((arr, number, index, defaultArray) => {
+            if((index + 1) % 3 === 0 && index !== 0 && (index + 1) !== defaultArray.length){
                 arr.push(number);
                 arr.push('.');
             } else {
