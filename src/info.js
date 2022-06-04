@@ -63,13 +63,16 @@ function getInfo(ytstream, url){
         reject(`The YouTube song has no initial player response`);
         return;
       }
+      res = decodeURI(res);
       res = res.split(`\\"`).join("");
       res = res.split(`,"interpreterSafeScript"`)[0];
       if(!res){
         reject(`The YouTube song has no initial player response`);
         return;
       }
-      res = res.split(`}}}};`)[0] + `}}}}`;
+      var seperate = res.split(`,"uploadDate":`);
+      var uploadDateValue = seperate[1].split("}}")[0];
+      res = seperate[0] + `,"uploadDate":${uploadDateValue}}}}`;
       var data = JSON.parse(res);
       if (data.playabilityStatus.status !== 'OK'){
         var error = data.playabilityStatus.errorScreen.playerErrorMessageRenderer ? data.playabilityStatus.errorScreen.playerErrorMessageRenderer.reason.simpleText : data.playabilityStatus.errorScreen.playerKavRenderer.reason.simpleText;
