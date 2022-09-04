@@ -1,12 +1,16 @@
 const http = require('http');
 const https = require('https');
+const dns = require('dns');
+const { promisify } = require("util");
+
+const lookup = promisify(dns.lookup);
 
 const requestType = {https: https, http: http};
 
 const _validate = require('./url.js');
 
 function request(_url, options){
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     if(typeof _url !== 'string') return reject(`URL is not a string`);
     let response = '';
 
@@ -22,12 +26,20 @@ function request(_url, options){
       timeout: 2000
     });
 
+    var dnsInfo;
+    try{
+      dnsInfo = await lookup(url.hostname, {hints: 0});
+    } catch {
+      dnsInfo = {family: 4};
+    }
+
     const http_options = {
       headers: options.headers || {},
       path: url.pathname + url.search,
       host: url.hostname,
       method: options.method || 'GET',
-      agent: agent
+      agent: agent,
+      family: dnsInfo.family
     };
 
     const req = prreq.request(http_options, res => {
@@ -48,7 +60,7 @@ function request(_url, options){
 }
 
 function requestCallback(_url, options){
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         if(typeof _url !== 'string') return reject(`URL is not a string`);
   
         const url = _validate(_url);
@@ -62,13 +74,21 @@ function requestCallback(_url, options){
           keepAliveMsecs: (Math.round(Math.random() * 3) + 5),
           timeout: 5000
         });
+    
+        var dnsInfo;
+        try{
+          dnsInfo = await lookup(url.hostname, {hints: 0});
+        } catch {
+          dnsInfo = {family: 4};
+        }
 
         const http_options = {
           headers: options.headers || {},
           path: url.pathname + url.search,
           host: url.hostname,
           method: options.method || 'GET',
-          agent: agent
+          agent: agent,
+          family: dnsInfo.family
         };
 
         const req = prreq.request(http_options, resolve);
