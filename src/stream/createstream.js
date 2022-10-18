@@ -103,7 +103,7 @@ function stream(ytstream, info, options){
                 return reject(err);
             }
         } else return reject(`Invalid info has been parsed to the stream function`);
-            const stream = new Stream(ytstream, stream_res.url, {
+        const stream = new Stream(ytstream, stream_res.url, {
             highWaterMark: _options['highWaterMark'] || undefined,
             duration: _info.duration,
             contentLength: stream_res.contentLength,
