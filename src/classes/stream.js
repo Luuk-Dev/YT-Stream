@@ -41,13 +41,13 @@ class Stream{
         this.info = info;
 
         this.bytes_count = 0;
-        this.contentLength = options.contentLength;
+        this.content_length = options.contentLength;
         this.duration = options.duration;
         this.type = options.type;
 
         this.req_type = options.req_type;
 
-        this.per_sec_byte = Math.ceil(this.contentLength / this.duration);
+        this.per_sec_byte = Math.ceil(this.content_length / this.duration);
         this.retryCount = 0;
         this.loop();
     }
