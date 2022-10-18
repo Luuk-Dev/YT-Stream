@@ -1,5 +1,6 @@
 const validate = require('./validate.js');
 const getInfo = require('./info.js').getInfo;
+const getPlaylist = require('./playlist.js').getPlaylist;
 const convert = require('./convert.js');
 const stream = require('./stream/createstream.js').stream;
 const search = require('./search/index.js').search;
@@ -11,6 +12,18 @@ class YTStream{
     };
     this.validateID = function(...args){
       return validate.validateID(this, ...args);
+    };
+    this.validateVideoURL = function(...args){
+      return validate.validateVideoURL(this, ...args);
+    };
+    this.validatePlaylistURL = function(...args){
+      return validate.validatePlaylistURL(this, ...args);
+    };
+    this.validatePlayListID = function(...args){
+      return validate.validatePlaylistID(this, ...args);
+    };
+    this.getPlaylist = function(...args){
+      return getPlaylist(this, ...args);
     };
     this.getInfo = function(...args){
       return getInfo(this, ...args);
