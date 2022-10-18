@@ -56,7 +56,6 @@ function getPlaylist(ytstream, url){
         
         var errors = (json.alerts || []).filter(a => a.alertRenderer.type === 'ERROR');
         if(errors.length > 0) return reject(errors[0].alertRenderer.text.runs[0].text);
-        await fs.writeFile(path.join(__dirname, `../new_data.json`), JSON.stringify(json, null, 2));
         resolve(new Playlist(json, headers));
     });
 }
@@ -69,14 +68,10 @@ function requestPlayList(url, headers){
         } catch(err) {
             return reject(err);
         }
-
-        console.log(res.headers);
         
         while(_url((res.headers.location || '')) !== false){
-            console.log(`Redirect url: ${res.headers.location || ''}`);
             res = await requestCallback(res.headers.location, headers);
         }
-        console.log(`Requested ${res.url}`);
 
         var response = '';
         res.on('data', d => {
