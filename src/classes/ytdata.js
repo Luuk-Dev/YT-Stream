@@ -7,17 +7,17 @@ class YouTubeData{
         this.author = videoDetails.author;
         this.title = videoDetails.title;
         this.description = videoDetails.shortDescription;
-        this.embedUrl = microformat.embed.iframeUrl;
-        this.familySafe = microformat.isFamilySafe;
-        this.availableCountries = microformat.availableCountries;
+        this.embed_url = microformat.embed.iframeUrl;
+        this.family_safe = microformat.isFamilySafe;
+        this.available_countries = microformat.availableCountries;
         this.category = microformat.category;
         this.thumbnails = videoDetails.thumbnail.thumbnails;
         this.default_thumbnail = videoDetails.thumbnail.thumbnails[videoDetails.thumbnail.thumbnails.length - 1];
         this.uploaded = microformat.publishDate;
-        this.duration = Number(videoDetails.lengthSeconds);
-        this.views = Number(videoDetails.viewCount);
+        this.duration = parseInt(videoDetails.lengthSeconds) * 1000;
+        this.views = parseInt(videoDetails.viewCount);
 
-        var viewsText = String(videoDetails.viewCount);
+        var viewsText = videoDetails.viewCount.toString();
         viewsText = viewsText.split('').reverse();
         viewsText = viewsText.reduce((arr, number, index, defaultArray) => {
             if((index + 1) % 3 === 0 && index !== 0 && (index + 1) !== defaultArray.length){
@@ -30,7 +30,7 @@ class YouTubeData{
         }, []);
         viewsText = viewsText.reverse().join('');
 
-        this.viewsText = viewsText;
+        this.views_text = viewsText;
         this.channel = {
           author: videoDetails.author,
           id: videoDetails.channelId,
@@ -41,7 +41,7 @@ class YouTubeData{
 
         this.formats.push(...(data.streamingData.formats || []));
         this.formats.push(...(data.streamingData.adaptiveFormats || []));
-		this.userAgent = headers['user-agent'];
+		this.user_agent = headers['user-agent'];
         if(typeof headers['cookie'] === 'string'){
             this.cookie = headers['cookie'];
         } else {
