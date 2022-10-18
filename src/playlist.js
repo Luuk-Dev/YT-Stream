@@ -64,13 +64,13 @@ function requestPlayList(url, headers){
     return new Promise(async (resolve, reject) => {
         var res;
         try{
-            res = await requestCallback(url, headers);
+            res = await requestCallback(url, headers, false);
         } catch(err) {
             return reject(err);
         }
         
         while(_url((res.headers.location || '')) !== false){
-            res = await requestCallback(res.headers.location, headers);
+            res = await requestCallback(res.headers.location, headers, false);
         }
 
         var response = '';
