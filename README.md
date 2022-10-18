@@ -13,7 +13,7 @@ You can download a video by using the `stream` function. The `stream` function h
 * video_url: The YouTube video url
 
 Optional options are:
-* type: Whether the download should be a video or audio
+* type: If your download preference is video or audio. If one of the types does not exists, it will download the other download type.
 * quality: The quality of the video (high or low)
 * highWaterMark: The highWaterMark for the Readable stream
 ```js
@@ -71,9 +71,27 @@ const ytstream = require('yt-stream');
     console.log(info.id); // Output: dQw4w9WgXcQ
     console.log(info.author); // Output: Rick Astley
     console.log(info.title); // Output: Rick Astley - Never Gonna Give You Up (Official Music Video)
-		console.log(info.uploaded); // Output: 2009-10-24
-		console.log(info.description); // Output: {short: '...', full: '...'}
-		console.log(info.duration); // Output: 212
+	console.log(info.uploaded); // Output: 2009-10-24
+	console.log(info.description); // Output: {short: '...', full: '...'}
+	console.log(info.duration); // Output: 212
+})();
+```
+
+## Get playlist info
+You can get information about a specific playlist. You can use the `getPlaylist` function for this. The `getPlaylist` function requires one parameter which is the `url`. The `getPlaylist` function returns `Promise` which will be fullfilled when the playlist information has successfully been received. The `Promise` returns the `Playlist` class. The most important properties of the `Playlist` class are:
+* videos: An `Array` of all the video's (the `PlaylistVideo` class is used for the video's)
+* title: The title of the playlist
+* author: The author of the playlist
+
+```js
+const ytstream = require('yt-stream');
+
+(async () => {
+    const info = await ytstream.getPlaylist(`https://www.youtube.com/playlist?list=PLk-dXGDrKWvZMVKjPtGaIqqI5eg3U7KSEA`);
+
+    console.log(info.videos); // Output: [Array]
+    console.log(info.title); // Output: Some playlist title
+    console.log(info.author); // Output: Some playlist author
 })();
 ```
 
@@ -95,11 +113,21 @@ ytstream.userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/2
 
 ## Validate YouTube url
 You can validate a YouTube url by using the `validateURL` function. The function requires one parameter which is the string to check whether it is a valid YouTube url or not.
+> Important: This also validates playlists, to only validate video's use the `validateVideoURL` function.
 ```js
 const ytstream = require('yt-stream');
 
 console.log(ytstream.validateURL('SomeString')) // Output: false
 console.log(ytstream.validateURL('https://www.youtube.com/watch?v=dQw4w9WgXcQ')); // Output: true
+```
+
+## Validate YouTube video url
+You can validate a YouTube video url by using the `validateVideoURL` function. The function requires one parameter which is the string to check whether it is a valid YouTube video url or not.
+```js
+const ytstream = require('yt-stream');
+
+console.log(ytstream.validateVideoURL('SomeString')) // Output: false
+console.log(ytstream.validateVideoURL('https://www.youtube.com/watch?v=dQw4w9WgXcQ')); // Output: true
 ```
 
 ## Validate YouTube video ID
@@ -111,8 +139,26 @@ console.log(ytstream.validateID('SomeString')) // Output: false
 console.log(ytstream.validateID('dQw4w9WgXcQ')); // Output: true
 ```
 
-## Get video ID
-You can easily convert a YouTube url to a YouTube video ID by using the `getID` function. The function requires one parameter which is the string to get the YouTube video ID from. If the string is an invalid YouTube url, the function will return `undefined`.
+## Validate YouTube playlist url
+You can validate a YouTube playlist url by using the `validatePlaylistURL` function. The function requires one parameter which is the string to check whether it is a valid YouTube playlist url or not.
+```js
+const ytstream = require('yt-stream');
+
+console.log(ytstream.validatePlaylistURL('SomeString')) // Output: false
+console.log(ytstream.validatePlaylistURL('https://www.youtube.com/playlist?list=PLk-dXGDrKWvZMVKjPtGaIqqI5eg3U7KSEA')); // Output: true
+```
+
+## Validate YouTube playlist ID
+You can validate a YouTube playlist ID by using the `validatePlaylistID` function. The function requires one parameter which is the string to check whether it is a valid YouTube playlist ID or not.
+```js
+const ytstream = require('yt-stream');
+
+console.log(ytstream.validatePlaylistID('SomeString')) // Output: false
+console.log(ytstream.validatePlaylistID('PLk-dXGDrKWvZMVKjPtGaIqqI5eg3U7KSEA')); // Output: true
+```
+
+## Get YouTube ID
+You can easily convert a YouTube url to a YouTube ID by using the `getID` function. The function requires one parameter which is the string to get the YouTube ID from. If the string is an invalid YouTube url, the function will return `undefined`.
 ```js
 const ytstream = require('yt-stream');
 
