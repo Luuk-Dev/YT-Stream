@@ -42,11 +42,8 @@ function request(_url, options){
       family: dnsInfo.family
     };
 
-    console.log(http_options);
-
     const req = prreq.request(http_options, res => {
       res.on('data', data => {
-        //console.log(data);
         response += data;
       });
       res.on('end', () => {
