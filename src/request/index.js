@@ -62,7 +62,7 @@ function request(_url, options){
   });
 }
 
-function requestCallback(_url, options){
+function requestCallback(_url, options, parsedOnly = false){
     return new Promise(async (resolve, reject) => {
         if(typeof _url !== 'string') return reject(`URL is not a string`);
   
@@ -94,13 +94,23 @@ function requestCallback(_url, options){
           family: dnsInfo.family
         };
 
-        const req = prreq.request(http_options, resolve);
+        if(parsedOnly === false){
+          const req = prreq.request(http_options, resolve);
 
-        req.on('error', error => {
-            reject(error);
-        });
+          req.on('error', error => {
+              reject(error);
+          });
 
-        req.end();
+          req.end();
+        } else {
+          const req = prreq.request(url, resolve);
+
+          req.on('error', error => {
+              reject(error);
+          });
+
+          req.end();
+        }
     });
 }
 
