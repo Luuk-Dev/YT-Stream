@@ -4,9 +4,9 @@ class Video{
         this.url = `https://www.youtube.com/watch?v=${this.id}`;
         this.title = data.title.runs[0].text;
         this.author = data.ownerText.runs[0].text;
-        this.channelId = data.ownerText.runs[0].navigationEndpoint.browseEndpoint.browseId;
-        this.channelURL = `https://www.youtube.com${data.ownerText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url}`;
-        this.userAgent = headers['user-agent'];
+        this.channel_id = data.ownerText.runs[0].navigationEndpoint.browseEndpoint.browseId;
+        this.channel_url = `https://www.youtube.com${data.ownerText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url}`;
+        this.user_agent = headers['user-agent'];
         if(typeof headers['cookie'] === 'string'){
             this.cookie = headers['cookie'];
         } else {
@@ -14,7 +14,7 @@ class Video{
         }
 
         if(data.lengthText){
-            this.lengthText = data.lengthText.simpleText;
+            this.length_text = data.lengthText.simpleText;
             const length = this.lengthText.split(':').reverse();
             var timestampLength = 0;
             for(var i = 0; i < length.length; i++){
@@ -24,16 +24,16 @@ class Video{
             }
             this.length = timestampLength;
         } else {
-            this.lengthText = 'Unknown length';
+            this.length_text = 'Unknown length';
             this.length = 0;
         }
 
         if(data.viewCountText){
-            this.viewsText = data.viewCountText.simpleText;
-            if(data.viewCountText.simpleText) this.views = Number(data.viewCountText.simpleText.toLowerCase().split(',').join('').split(' ')[0]);
-            else this.viewsText = 'Unknown views';
+            this.views_text = data.viewCountText.simpleText;
+            if(data.viewCountText.simpleText) this.views = parseInt(data.viewCountText.simpleText.toLowerCase().split(',').join('').split(' ')[0]);
+            else this.views_text = 'Unknown views';
         } else {
-            this.viewText = 'Unknown views';
+            this.view_text = 'Unknown views';
             this.views = 0;
         }
         
