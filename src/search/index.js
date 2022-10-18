@@ -31,11 +31,11 @@ function defaultExtractor(response, headers){
 function search(ytstream, query, options){
   if(typeof query !== 'string') throw new Error(`Query must be a string`);
 
-  var _options = options || {type: 'music'};
+  var _options = options || {type: 'video'};
 
   var host = 'https://www.youtube.com/results?search_query=';
 
-  let url = host + encodeURIComponent(query) + (_options['type'] !== 'music' ? '&sp=EgIQAQ%253D%253D' : '');
+  let url = host + encodeURIComponent(query) + (_options['type'] !== 'vidoe' ? '&sp=EgIQAQ%253D%253D' : '');
 
   let headers = { 
     'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8,hi;q=0.7',
