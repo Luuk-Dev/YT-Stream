@@ -1,9 +1,11 @@
-const validate = require('./validate.js').validateURL;
+const { validateVideoURL } = require('./validate.js');
 const _url = require('./request/url.js');
 const request = require('./request/index.js').request;
 const YouTubeData = require('./classes/ytdata.js');
 const userAgent = require('./request/useragent.js').getRandomUserAgent;
 const { getID } = require('./convert.js');
+const fs = require("fs/promises");
+const path = require("path");
 
 function getHTML5player(response){
   let html5playerRes =
@@ -16,8 +18,8 @@ function getInfo(ytstream, url){
   return new Promise((resolve, reject) => {
     if(typeof url !== 'string') throw new Error(`URL is not a string`);
 
-    const validation = validate(ytstream, url);
-    if(!validation) throw new Error(`Invalid YouTube URL`);
+    const validation = validateVideoURL(ytstream, url);
+    if(!validation) throw new Error(`Invalid YouTube video URL`);
 
     var ytid = null;
     const parsed = _url(url);
@@ -49,8 +51,9 @@ function getInfo(ytstream, url){
 
     request(yturl, {
       headers: headers
-    }).then(response => {
+    }).then(async response => {
       if(response.indexOf(`Our systems have detected unusual traffic from your computer network.`) >= 0) return reject(`YouTube has detected that you are a bot. Try it later again.`);
+      await fs.writeFile(path.join(__dirname, `../response.html`), response);
       var res = response.split('var ytInitialPlayerResponse = ')[1];
 			var html5path = getHTML5player(response);
       const html5player = typeof html5path === 'string' ? `https://www.youtube.com${html5path}` : null;
