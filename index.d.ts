@@ -17,7 +17,7 @@ interface Stream{
     video_url: string;
     quality: number;
     bytes_count: number;
-    contentLength: string;
+    content_length: string;
     duration: number;
     type: string;
     req_type: string;
@@ -31,16 +31,16 @@ interface YouTubeData{
     author: string;
     title: string;
     description: string;
-    embedUrl: string;
-    familySafe: boolean;
-    availableCountries: [string];
+    embed_url: string;
+    family_safe: boolean;
+    available_countries: [string];
     category: string;
     thumbnails: [{url: string, width: number, height: number}];
 	default_thumbnail: {url: string, width: number, height: number};
     uploaded: string;
     duration: number;
     views: number;
-    viewsText: string;
+    views_text: string;
     channel: {
         author: string;
         id: string;
@@ -66,7 +66,7 @@ interface YouTubeData{
         signatureCipher: string;
     }];
     html5player: string;
-	userAgent: string;
+	user_agent: string;
     cookie: string | null;
 }
 
@@ -75,15 +75,42 @@ interface Video{
     url: string;
     title: string;
     author: string;
-    channelId: string;
-    channelURL: string;
-    lengthText: string;
+    channel_id: string;
+    channel_url: string;
+    length_text: string;
     length: number;
-    viewsText: string;
+    views_text: string;
     views: number;
     thumbnail: string;
-    userAgent: string;
+    user_agent: string;
     cookie: string | null;
+}
+
+interface PlaylistVideo{
+    title: string;
+    video_url: string;
+    video_id: string;
+    position: number;
+    length_text: string;
+    length: number;
+    thumbnails: [{url: string, height: number, width: number}];
+    default_thumbnail: {url: string, height: number, width: number};
+    playlist_id: string;
+    playlist_url: string;
+}
+
+interface Playlist{
+    title: string;
+    description: string;
+    author: string;
+    author_images: [{url: string, height: number, width: number}];
+    default_author_images: {url: string, height: number, width: number};
+    author_channel: string;
+    url: string;
+    videos: [PlaylistVideo],
+    videos_amount: number;
+    cookie: string | null;
+    user_agent: string;
 }
 
 /**
@@ -99,10 +126,28 @@ export declare function getInfo(url: string) : Promise<YouTubeData>;
 export declare function validateID(id: string) : boolean;
 
 /**
+ * Check whether the YouTube URL is valid or not
+ * @param url The YouTube URL
+ */
+export declare function validateURL(url: string) : boolean;
+
+/**
  * Check whether the YouTube video URL is valid or not
  * @param url The YouTube video URL
  */
-export declare function validateURL(url: string) : boolean;
+export declare function validateVideoURL(url: string) : boolean;
+
+/**
+ * Check whether the YouTube playlist URL is valid or not
+ * @param url The YouTube playlist URL
+ */
+export declare function validatePlaylistURL(url: string) : boolean;
+
+/**
+ * Check whether the YouTube playlist ID is valid or not
+ * @param id The YouTube playlist ID
+ */
+export declare function validatePlaylistID(id: string) : boolean;
 
 /**
  * Get the YouTube video ID from the video URL
@@ -128,6 +173,8 @@ export declare function search(query: string) : Promise<[Video]>;
  * @param options 
  */
 export declare function stream(info: download, options: downloadOptions) : Promise<Stream>;
+
+export declare function getPlaylist(url: string) : Promise<Playlist>;
 
 declare var cookie: string;
 declare var userAgent: string;
