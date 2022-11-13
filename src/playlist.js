@@ -54,7 +54,11 @@ function getPlaylist(ytstream, url){
             json = JSON.parse(json);
         } catch {}
         
-        var errors = (json.alerts || []).filter(a => a.alertRenderer.type === 'ERROR');
+        var alerts = (json.alerts || []);
+        alerts.push({alertRenderer: {}});
+        var errors = alerts.filter(a => {
+            return (a.alertRenderer || a.alertWithButtonRenderer).type === 'ERROR';
+        });
         if(errors.length > 0) return reject(errors[0].alertRenderer.text.runs[0].text);
         resolve(new Playlist(json, headers));
     });
