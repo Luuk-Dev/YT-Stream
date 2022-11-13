@@ -17,6 +17,7 @@ class Playlist{
         var videoInfo = data.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].playlistVideoListRenderer.contents;
         this.videos = [];
         for(var i = 0; i < videoInfo.length; i++){
+            if(typeof videoInfo[i].playlistVideoRenderer === 'undefined') continue;
             this.videos.push(new PlaylistVideo(data, videoInfo[i].playlistVideoRenderer));
         }
         this.video_amount = videoInfo.length;
