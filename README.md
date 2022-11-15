@@ -7,7 +7,7 @@ npm install yt-stream
 YT-Stream is a package which can download and search YouTube video's very fast.
 
 ## Downloading
-You can download a video by using the `stream` function. The `stream` function has two parameters; the `info` or `url` parameter and the `options` parameter. The `options` parameter is not required. The first parameter must include the video url or the info that has been received from the `info` function. The `stream` function will return a `Promise`. The `Promise ` will be fullfilled if the video was successfully downloaded. If there was an error, the `Promise` will be rejected with the error. Once the `Promise` gets fullfilled it will return the `Stream` class. The most important properties in the `Stream` class are:
+You can download a video by using the `stream` function. The `stream` function has two parameters; the `info` or `url` parameter and the `options` parameter. The `options` parameter is not required. The first parameter must include the video url or the info that has been received from the `info` function. The `stream` function will return a `Promise`. The `Promise` will be fullfilled if the video was successfully downloaded. If there was an error, the `Promise` will be rejected with the error. Once the `Promise` gets fullfilled it will return the `Stream` class. The most important properties in the `Stream` class are:
 * stream: The Readable stream
 * url: The url to download the video or song
 * video_url: The YouTube video url
