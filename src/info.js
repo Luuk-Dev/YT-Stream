@@ -4,8 +4,6 @@ const request = require('./request/index.js').request;
 const YouTubeData = require('./classes/ytdata.js');
 const userAgent = require('./request/useragent.js').getRandomUserAgent;
 const { getID } = require('./convert.js');
-const fs = require("fs/promises");
-const path = require("path");
 
 function getHTML5player(response){
   let html5playerRes =
@@ -53,7 +51,6 @@ function getInfo(ytstream, url){
       headers: headers
     }).then(async response => {
       if(response.indexOf(`Our systems have detected unusual traffic from your computer network.`) >= 0) return reject(`YouTube has detected that you are a bot. Try it later again.`);
-      await fs.writeFile(path.join(__dirname, `../response.html`), response);
       var res = response.split('var ytInitialPlayerResponse = ')[1];
 			var html5path = getHTML5player(response);
       const html5player = typeof html5path === 'string' ? `https://www.youtube.com${html5path}` : null;
@@ -66,7 +63,9 @@ function getInfo(ytstream, url){
         reject(`The YouTube song has no initial player response`);
         return;
       }
-      res = decodeURI(res);
+      try{
+        res = decodeURI(res);
+      } catch {}
       res = res.split(`\\"`).join("");
       res = res.split(`,"interpreterSafeScript"`)[0];
       if(!res){
