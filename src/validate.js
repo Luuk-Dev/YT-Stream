@@ -1,6 +1,5 @@
 const validate = require('./request/url.js');
 
-
 function validateID(ytstream, id) {
   if (typeof id !== 'string') return false;
   let reg = /^[A-Za-z0-9-_]*$/;
@@ -35,7 +34,7 @@ function validateURL(ytstream, url) {
     if (hosts[index] === `youtu.be` && _url.pathname.length > 0) ytid = _url.pathname.split('/').join('');
     else if (_url.pathname.startsWith('/embed/')) ytid = _url.pathname.split('/embed/').join('');
     else if (_url.pathname.startsWith('/v/')) ytid = _url.pathname.split('/v/').join('');
-    else if(_url.pathname.startsWith('/shorts/')) ytid = _url.pathname.split('/v/').join('');
+    else if(_url.pathname.startsWith('/shorts/')) ytid = _url.pathname.split('/shorts/').join('');
     else if(_url.pathname.startsWith('/playlist')){
       if(!_url.searchParams.get('list')) return false;
       ytid = _url.searchParams.get('list');
@@ -69,7 +68,7 @@ function validateVideoURL(ytstream, url) {
     if (hosts[index] === `youtu.be` && _url.pathname.length > 0) ytid = _url.pathname.split('/').join('');
     else if (_url.pathname.startsWith('/embed/')) ytid = _url.pathname.split('/embed/').join('');
     else if (_url.pathname.startsWith('/v/')) ytid = _url.pathname.split('/v/').join('');
-    else if(_url.pathname.startsWith('/shorts/')) ytid = _url.pathname.split('/v/').join('');
+    else if(_url.pathname.startsWith('/shorts/')) ytid = _url.pathname.split('/shorts/').join('');
   } else {
     if (!_url.searchParams.get('v')) return false;
     ytid = _url.searchParams.get('v');
