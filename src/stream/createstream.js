@@ -1,4 +1,4 @@
-const validate = require('../validate.js').validateURL;
+const validate = require('../validate.js').validateVideoURL;
 const getInfo = require('../info.js').getInfo;
 const Stream = require('../classes/stream.js');
 const Data = require('../classes/ytdata.js');
@@ -6,8 +6,9 @@ const cipher = require('./decipher.js');
 
 function parseAudio(formats){
     const audio = [];
-    for(var i = 0; i < formats.length; i++){
-        var format = formats[i];
+	var audioFormats = formats.filter(f => f.mimeType.startsWith('audio'));
+    for(var i = 0; i < audioFormats.length; i++){
+        var format = audioFormats[i];
         const type = format.mimeType;
         if(type.startsWith('audio')){
             format.codec = type.split('codecs=')[1].split('"')[0];
@@ -20,8 +21,9 @@ function parseAudio(formats){
 
 function parseVideo(formats){
     const video = [];
-    for(var i = 0; i < formats.length; i++){
-        var format = formats[i];
+	var videoFormats = formats.filter(f => f.type.startsWith('video'));
+    for(var i = 0; i < videoFormats.length; i++){
+        var format = videoFormats[i];
         const type = format.mimeType;
         if(type.startsWith('video')){
             format.codec = type.split('codecs=')[1].split('"')[0];
@@ -113,7 +115,13 @@ function stream(ytstream, info, options){
             req_type: stream_res.req_type,
             ytstream: ytstream
         }, _info);
-        resolve(stream);
+        if(stream.ready === true){
+            resolve(stream);
+        } else {
+            stream.once('ready', () => {
+                resolve(stream);
+            });
+        }
     });
 }
 
