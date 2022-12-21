@@ -1,4 +1,5 @@
 import { Readable } from "stream";
+import { EventEmitter } from "events";
 
 type convert = string | boolean;
 type download = string | object;
@@ -11,9 +12,10 @@ interface downloadOptions{
     quality: quality;
 }
 
-interface Stream{
+interface Stream extends EventEmitter{
     stream: Readable;
     url: string;
+	container: string;
     video_url: string;
     quality: number;
     bytes_count: number;
@@ -22,7 +24,7 @@ interface Stream{
     type: string;
     req_type: string;
     per_sec_bytes: number;
-    info : YouTubeData;
+    info: YouTubeData;
 }
 
 interface YouTubeData{
@@ -64,6 +66,8 @@ interface YouTubeData{
         audioSampleRate: string;
         audioChannels: number;
         signatureCipher: string;
+		codec: string;
+		container: string;
     }];
     html5player: string;
 	user_agent: string;
@@ -168,7 +172,7 @@ export declare function getURL(id: string) : convert;
 export declare function search(query: string) : Promise<[Video]>;
 
 /**
- * Download the YouTube video and create a writeable stream of it
+ * Download the YouTube video and create a readable stream of it
  * @param info 
  * @param options 
  */
