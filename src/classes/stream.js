@@ -1,12 +1,14 @@
 const { Readable } = require('stream');
+const { EventEmitter } = require('events');
 const cipher = require('../stream/decipher.js');
 const { requestCallback } = require('../request/index.js');
 const getInfo = require('../info.js').getInfo;
 
 function parseAudio(formats){
     const audio = [];
-    for(var i = 0; i < formats.length; i++){
-        var format = formats[i];
+    var audioFormats = formats.filter(f => f.mimeType.startsWith('audio'));
+    for(var i = 0; i < audioFormats.length; i++){
+        var format = audioFormats[i];
         const type = format.mimeType;
         if(type.startsWith('audio')){
             format.codec = type.split('codecs=')[1].split('"')[0];
@@ -19,8 +21,9 @@ function parseAudio(formats){
 
 function parseVideo(formats){
     const video = [];
-    for(var i = 0; i < formats.length; i++){
-        var format = formats[i];
+    var videoFormats = formats.filter(f => f.type.startsWith('video'));
+    for(var i = 0; i < videoFormats.length; i++){
+        var format = videoFormats[i];
         const type = format.mimeType;
         if(type.startsWith('video')){
             format.codec = type.split('codecs=')[1].split('"')[0];
@@ -31,9 +34,11 @@ function parseVideo(formats){
     return video;
 }
 
-class Stream{
+class Stream extends EventEmitter{
     constructor(ytstream, url, options, info){
+        super();
         this.stream = new Readable({highWaterMark: (options.highWaterMark || 1048576 * 32), read() {}}); 
+        this.container = options.container;
         this.ytstream = ytstream;
         this.url = url;
         this.video_url = options.video_url;
@@ -81,14 +86,24 @@ class Stream{
                     return this.retry();
                 }
             }
+            var chunkCount = 0;
             stream.on('data', chunk => {
                 this.bytes_count += chunk.length;
                 this.stream.push(chunk);
+                ++chunkCount;
+                if(chunkCount === 3){
+                    this.emit('ready');
+                    this.ready = true;
+                }
             });
 
             stream.on('end', () => {
                 if(end >= this.contentLength){
                     this.stream.push(null);
+                }
+                if(chunkCount < 3){
+                    this.emit('ready');
+                    this.ready = true;
                 }
             });
         }).catch(err => {
@@ -101,6 +116,7 @@ class Stream{
     resume(){
       this.stream.resume();
     }
+	ready = false;
 }
 
 module.exports = Stream;
