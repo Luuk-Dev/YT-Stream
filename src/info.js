@@ -43,8 +43,8 @@ function getInfo(ytstream, url){
       'user-agent' : userA,
     };
 
-    if(typeof ytstream.cookie === 'string'){
-      headers['cookie'] = ytstream.cookie;
+    if(typeof ytstream.storedCookie === 'string'){
+      headers['cookie'] = ytstream.storedCookie;
     }
 
     request(yturl, {
