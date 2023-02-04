@@ -36,15 +36,15 @@ function getInfo(ytstream, url){
 
     const yturl = `https://www.youtube.com/watch?v=${ytid}&has_verified=1`;
 
-		const userA = typeof ytstream.userAgent === 'string' ? ytstream.userAgent : userAgent();
+    const userA = typeof ytstream.userAgent === 'string' ? ytstream.userAgent : userAgent();
 
     let headers = { 
       'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8,hi;q=0.7',
       'user-agent' : userA,
     };
 
-    if(typeof ytstream.storedCookie === 'string'){
-      headers['cookie'] = ytstream.storedCookie;
+    if(typeof ytstream.cookie === 'string'){
+      headers['cookie'] = ytstream.cookie;
     }
 
     request(yturl, {
