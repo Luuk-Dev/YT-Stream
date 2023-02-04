@@ -40,7 +40,8 @@ class YTStream{
     this.search = function(...args){
       return search(this, ...args);
     }
-		this.userAgent = null;
+    this.userAgent = null;
+    this.storedCookie = null;
   }
 
   get cookie(){
