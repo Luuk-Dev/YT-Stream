@@ -40,8 +40,15 @@ class YTStream{
     this.search = function(...args){
       return search(this, ...args);
     }
-    this.cookie = null;
 		this.userAgent = null;
+  }
+
+  get cookie(){
+    return this.storedCookie || process.env.YT_COOKIE;
+  }
+
+  set cookie(newCookie){
+    this.storedCookie = newCookie;
   }
 }
 

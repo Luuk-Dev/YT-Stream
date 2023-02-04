@@ -96,7 +96,9 @@ const ytstream = require('yt-stream');
 ```
 
 ## Setting a cookie
-You can easily set a cookie by changing the `cookie` property to the YouTube cookie.
+You can easily set a cookie by changing the `cookie` property to the YouTube cookie. It is also possible to set the cookie using the environment variable `YT_COOKIE`. If both are set the programmatically set one will be used.
+
+The cookie is required to download videos that are age restricted.
 ```js
 const ytstream = require('yt-stream');
 
