@@ -71,9 +71,9 @@ const ytstream = require('yt-stream');
     console.log(info.id); // Output: dQw4w9WgXcQ
     console.log(info.author); // Output: Rick Astley
     console.log(info.title); // Output: Rick Astley - Never Gonna Give You Up (Official Music Video)
-	console.log(info.uploaded); // Output: 2009-10-24
-	console.log(info.description); // Output: {short: '...', full: '...'}
-	console.log(info.duration); // Output: 212
+    console.log(info.uploaded); // Output: 2009-10-24
+    console.log(info.description); // Output: 'The official video for “Never Gonna Give You Up”...'
+    console.log(info.duration); // Output: 212000
 })();
 ```
 
@@ -98,7 +98,7 @@ const ytstream = require('yt-stream');
 ## Setting a cookie
 You can easily set a cookie by changing the `cookie` property to the YouTube cookie. It is also possible to set the cookie using the environment variable `YT_COOKIE`. If both are set the programmatically set one will be used.
 
-The cookie is required to download videos that are age restricted.
+The cookie is required to download videos that are age restricted or private.
 ```js
 const ytstream = require('yt-stream');
 
