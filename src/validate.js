@@ -2,7 +2,7 @@ const validate = require('./request/url.js');
 
 function validateID(ytstream, id) {
   if (typeof id !== 'string') return false;
-  let reg = /^[A-Za-z0-9-_]*$/;
+  let reg = /^[A-Za-z0-9_-]*$/;
   if(!reg.test(id)) return false;
   if(id.length > 16 || id.length < 8) return false;
   return true;
@@ -10,9 +10,9 @@ function validateID(ytstream, id) {
 
 function validatePlaylistID(ytstream, id){
   if(typeof id !== 'string') return false;
-  let reg = /^[a-zA-Z0-9-]*$/;
+  let reg = /^[a-zA-Z0-9_-]*$/;
   if(!reg.test(id)) return false;
-  if(id.length > 40 || id.length < 30) return false;
+  if(id.length > 50 || id.length < 30) return false;
   return true;
 }
 
