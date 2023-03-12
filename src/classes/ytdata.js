@@ -7,7 +7,7 @@ class YouTubeData{
         this.author = videoDetails.author;
         this.title = videoDetails.title;
         this.description = videoDetails.shortDescription;
-        this.embed_url = microformat.embed.iframeUrl;
+        this.embed_url = typeof microformat.embed === 'object' ? microformat.embed.iframeUrl : `https://www.youtube.com/embed/${videoDetails.videoId}`;
         this.family_safe = microformat.isFamilySafe;
         this.available_countries = microformat.availableCountries;
         this.category = microformat.category;
