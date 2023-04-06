@@ -88,9 +88,13 @@ function stream(ytstream, info, options){
         var stream_res;
         if(typeof info === 'string'){
             if(!validate(ytstream, info)) return reject(`URL is not a valid YouTube URL`);
+          try{
             _info = await getInfo(ytstream, info);
             const _ci = await cipher.format_decipher(_info.formats, _info.html5player);
             _info.formats = _ci;
+          }catch(err){
+            return reject(err)
+          }
             try {
                 stream_res = await getStreamURL(_info, _options);
             } catch (err) {
