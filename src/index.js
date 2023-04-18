@@ -7,47 +7,45 @@ const search = require('./search/index.js').search;
 
 class YTStream{
   constructor(){
-    this.validateURL = function(...args){
+    this.validateURL = (...args) => {
       return validate.validateURL(this, ...args)
     };
-    this.validateID = function(...args){
+    this.validateID = (...args) => {
       return validate.validateID(this, ...args);
     };
-    this.validateVideoURL = function(...args){
+    this.validateVideoURL = (...args) => {
       return validate.validateVideoURL(this, ...args);
     };
-    this.validatePlaylistURL = function(...args){
+    this.validatePlaylistURL = (...args) => {
       return validate.validatePlaylistURL(this, ...args);
     };
-    this.validatePlayListID = function(...args){
+    this.validatePlayListID = (...args) => {
       return validate.validatePlaylistID(this, ...args);
     };
-    this.getPlaylist = function(...args){
+    this.getPlaylist = (...args) => {
       return getPlaylist(this, ...args);
     };
-    this.getInfo = function(...args){
+    this.getInfo = (...args) => {
       return getInfo(this, ...args);
     };
-    this.getID = function(...args){
+    this.getID = (...args) => {
       return convert.getID(this, ...args);
     };
-    this.getURL = function(...args){
+    this.getURL = (...args) => {
       return convert.getURL(this, ...args);
     };
-    this.stream = function(...args){
+    this.stream = (...args) => {
       return stream(this, ...args);
     }
-    this.search = function(...args){
+    this.search = (...args) => {
       return search(this, ...args);
     }
-    this.userAgent = null;
     this.storedCookie = null;
+		this.userAgent = null;
   }
-
   get cookie(){
     return this.storedCookie || process.env.YT_COOKIE;
   }
-
   set cookie(newCookie){
     this.storedCookie = newCookie;
   }
