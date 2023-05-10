@@ -21,7 +21,7 @@ function parseAudio(formats){
 
 function parseVideo(formats){
     const video = [];
-    var videoFormats = formats.filter(f => f.type.startsWith('video'));
+    var videoFormats = formats.filter(f => f.mimeType.startsWith('video'));
     for(var i = 0; i < videoFormats.length; i++){
         var format = videoFormats[i];
         const type = format.mimeType;
