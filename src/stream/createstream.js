@@ -75,7 +75,8 @@ function getStreamURL(info, options){
             contentLength: selectedFormat.contentLength,
             type: type,
             quality: typeof _options['quality'] === 'string' ? (_options['quality'] === 'high' ? vid.length - 1 : 0) : (_options['quality'] || 0),
-            req_type: (_options['type'] || 'audio')
+            req_type: (_options['type'] || 'audio'),
+            container: selectedFormat.container
         });
     });
 }
@@ -113,6 +114,7 @@ function stream(ytstream, info, options){
             quality: stream_res.quality,
             video_url: _info.url,
             req_type: stream_res.req_type,
+            container: stream_res.container,
             ytstream: ytstream
         }, _info);
         if(stream.ready === true){
