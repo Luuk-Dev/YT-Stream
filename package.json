@@ -1,6 +1,6 @@
 {
   "name": "yt-stream",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "Create easily readable streams from YouTube video url's",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,18 @@
   "license": "MIT",
   "readme": "README.md",
   "publisher": "Luuk",
-  "keywords": ["youtube", "downloader", "download", "search", "stream", "play", "ytdl", "youtube-dl", "yt", "player"],
+  "keywords": [
+    "youtube",
+    "downloader",
+    "download",
+    "search",
+    "stream",
+    "play",
+    "ytdl",
+    "youtube-dl",
+    "yt",
+    "player"
+  ],
   "repository": {
     "type": "github",
     "url": "https://github.com/Luuk-Dev/yt-stream"
