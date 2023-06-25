@@ -3,8 +3,6 @@ const _url = require('./request/url.js');
 const { requestCallback } = require("./request/index.js");
 const userAgent = require("./request/useragent.js").getRandomUserAgent;
 const { getID } = require("./convert.js");
-const fs = require("fs/promises");
-const path = require("path");
 const Playlist = require("./classes/playlist.js");
 
 function getPlaylist(ytstream, url){
@@ -66,15 +64,21 @@ function getPlaylist(ytstream, url){
 
 function requestPlayList(url, headers){
     return new Promise(async (resolve, reject) => {
+        
+        let options = {
+            headers: headers,
+            method: 'GET'
+        };
+
         var res;
         try{
-            res = await requestCallback(url, headers, false);
+            res = await requestCallback(url, options, false);
         } catch(err) {
             return reject(err);
         }
         
         while(_url((res.headers.location || '')) !== false){
-            res = await requestCallback(res.headers.location, headers, false);
+            res = await requestCallback(res.headers.location, options, false);
         }
 
         var response = '';
