@@ -40,6 +40,7 @@ interface YouTubeData{
     thumbnails: [{url: string, width: number, height: number}];
 	default_thumbnail: {url: string, width: number, height: number};
     uploaded: string;
+    uploadedTimestamp: number;
     duration: number;
     views: number;
     views_text: string;
