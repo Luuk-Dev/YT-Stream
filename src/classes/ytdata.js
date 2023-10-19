@@ -13,7 +13,9 @@ class YouTubeData{
         this.category = microformat.category;
         this.thumbnails = videoDetails.thumbnail.thumbnails;
         this.default_thumbnail = videoDetails.thumbnail.thumbnails[videoDetails.thumbnail.thumbnails.length - 1];
-        this.uploaded = microformat.publishDate;
+        const uploadedTime = new Date(microformat.publishDate);
+        this.uploaded = `${uploadedTime.getDate()}-${uploadedTime.getMonth()}-${uploadedTime.getFullYear()}`;
+        this.uploadedTimestamp = uploadedTime.getTime();
         this.duration = parseInt(videoDetails.lengthSeconds) * 1000;
         this.views = parseInt(videoDetails.viewCount);
 
