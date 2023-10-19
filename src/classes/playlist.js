@@ -7,7 +7,7 @@ class Playlist{
 
         var getAuthorArrayItem = data.sidebar.playlistSidebarRenderer.items.filter(s => typeof s.playlistSidebarSecondaryInfoRenderer !== 'undefined');
         var authorInfo = getAuthorArrayItem[0].playlistSidebarSecondaryInfoRenderer.videoOwner.videoOwnerRenderer;
-        this.author = authorInfo.title;
+        this.author = (authorInfo.title.runs[0].text ?? '').split(' ').slice(1).join(' ');
         this.author_images = authorInfo.thumbnail.thumbnails;
         this.default_author_image = authorInfo.thumbnail.thumbnails[authorInfo.thumbnail.thumbnails.length - 1];
         this.author_channel = `https://www.youtube.com${authorInfo.navigationEndpoint.commandMetadata.webCommandMetadata.url}`;
