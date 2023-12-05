@@ -16,6 +16,7 @@ Optional options are:
 * type: If your download preference is video or audio. If one of the types does not exists, it will download the other download type.
 * quality: The quality of the video (high or low)
 * highWaterMark: The highWaterMark for the Readable stream
+* download: A boolean which defines whether to automatically download and push the chunks in the Readable stream (`stream` property of the `Stream` class) the video or not (default `true`)
 ```js
 const ytstream = require('yt-stream');
 const fs = require('fs');
@@ -24,7 +25,8 @@ const fs = require('fs');
     const stream = await ytstream.stream(`https://www.youtube.com/watch?v=dQw4w9WgXcQ`, {
         quality: 'high',
         type: 'audio',
-        highWaterMark: 1048576 * 32
+        highWaterMark: 1048576 * 32,
+        download: true
     });
     stream.stream.pipe(fs.createWriteStream('some_song.mp3'));
     console.log(stream.video_url);
