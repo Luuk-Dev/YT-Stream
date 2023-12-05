@@ -10,6 +10,7 @@ interface downloadOptions{
     type: streamType;
     highWaterMark: number;
     quality: quality;
+    download: boolean;
 }
 
 interface Stream extends EventEmitter{
