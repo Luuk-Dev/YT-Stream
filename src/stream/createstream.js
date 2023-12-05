@@ -76,7 +76,8 @@ function getStreamURL(info, options){
             type: type,
             quality: typeof _options['quality'] === 'string' ? (_options['quality'] === 'high' ? vid.length - 1 : 0) : (_options['quality'] || 0),
             req_type: (_options['type'] || 'audio'),
-            container: selectedFormat.container
+            container: selectedFormat.container,
+            format: selectedFormat
         });
     });
 }
@@ -116,6 +117,7 @@ function stream(ytstream, info, options){
             req_type: stream_res.req_type,
             container: stream_res.container,
             download: typeof _options['download'] === 'boolean' ? _options['download'] : true,
+            format: stream_res.format,
             ytstream: ytstream
         }, _info);
         if(stream.ready === true){
