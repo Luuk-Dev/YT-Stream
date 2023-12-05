@@ -54,7 +54,7 @@ class Stream extends EventEmitter{
 
         this.per_sec_byte = Math.ceil(this.content_length / this.duration);
         this.retryCount = 0;
-        this.loop();
+        if(options.download === true) this.loop();
     }
     async retry(){
         const info = await getInfo(this.ytstream, this.video_url);
