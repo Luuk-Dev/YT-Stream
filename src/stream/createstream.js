@@ -115,6 +115,7 @@ function stream(ytstream, info, options){
             video_url: _info.url,
             req_type: stream_res.req_type,
             container: stream_res.container,
+            download: typeof _options['download'] === 'boolean' ? _options['download'] : true,
             ytstream: ytstream
         }, _info);
         if(stream.ready === true){
