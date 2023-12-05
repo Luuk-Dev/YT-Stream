@@ -25,6 +25,27 @@ interface Stream extends EventEmitter{
     type: string;
     req_type: string;
     per_sec_bytes: number;
+    format: {
+        itag: number;
+        mimeType: string;
+        bitrate: number;
+        width: number;
+        height: number;
+        lastModified: string;
+        contentLength: string;
+        quality: string;
+        fps: number;
+        qualityLabel: string;
+        projectionType: string;
+        avarageBitrate: number;
+        audioQuality: string;
+        approxDurationMs: string;
+        audioSampleRate: string;
+        audioChannels: number;
+        signatureCipher: string;
+		codec: string;
+		container: string;
+    };
     info: YouTubeData;
 }
 
