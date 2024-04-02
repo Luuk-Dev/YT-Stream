@@ -46,7 +46,7 @@ class Stream extends EventEmitter{
         this.info = info;
 
         this.bytes_count = 0;
-        this.content_length = options.contentLength;
+        this.content_length = parseInt(options.contentLength);
         this.duration = options.duration;
         this.type = options.type;
 
@@ -76,7 +76,7 @@ class Stream extends EventEmitter{
         this.loop();
     }
     loop(){
-        const end = this.bytes_count + this.per_sec_byte * 300;
+        let end = this.bytes_count + this.per_sec_byte * 300;
         
         requestCallback(this.url, {
             headers: {
@@ -94,6 +94,7 @@ class Stream extends EventEmitter{
             var chunkCount = 0;
             stream.on('data', chunk => {
                 this.bytes_count += chunk.length;
+                end = this.bytes_count + this.per_sec_byte * 300;
                 this.stream.push(chunk);
                 ++chunkCount;
                 if(chunkCount === 3){
@@ -103,7 +104,7 @@ class Stream extends EventEmitter{
             });
 
             stream.on('end', () => {
-                if(end >= this.contentLength){
+                if(end >= this.content_length){
                     this.stream.push(null);
                 }
                 if(chunkCount < 3){
