@@ -58,7 +58,7 @@ function search(ytstream, query, options){
   return new Promise((resolve, reject) => {
     request(url, {
       headers: headers
-    }).then(response => {
+    }, ytstream.agent).then(response => {
       resolve(defaultExtractor(response, headers));
     }).catch(err => {
       reject(err);
