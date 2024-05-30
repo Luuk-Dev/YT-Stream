@@ -2,6 +2,8 @@ const validate = require('./validate.js');
 const getInfo = require('./info.js').getInfo;
 const getPlaylist = require('./playlist.js').getPlaylist;
 const convert = require('./convert.js');
+const { Cookie } = require('tough-cookie');
+const { YTStreamAgent } = require('./cookieHandler.js');
 const stream = require('./stream/createstream.js').stream;
 const search = require('./search/index.js').search;
 
@@ -36,21 +38,27 @@ class YTStream{
     };
     this.stream = (...args) => {
       return stream(this, ...args);
-    }
+    };
     this.search = (...args) => {
       return search(this, ...args);
+    };
+    this.setGlobalAgent = (agent) => {
+      if(!(agent instanceof YTStreamAgent)) throw new Error(`Global agent must be an instance of YTStreamAgent`);
+      this.agent = agent;
+    };
+    this.setGlobalHeaders = (headers) => {
+      if(typeof headers !== 'object' || Array.isArray(headers) || headers === null) throw new Error(`Invalid headers. Headers must be a type of object and may not be an Array or null.`);
+      this.headers = {};
+      for(const header in headers){
+        this.headers[header] = headers[header];
+      }
     }
-    this.storedCookie = null;
 		this.userAgent = null;
-  }
-  get cookie(){
-    return this.storedCookie || process.env.YT_COOKIE;
-  }
-  set cookie(newCookie){
-    this.storedCookie = newCookie;
+    this.headers = {};
+    this.Cookie = Cookie;
+    this.YTStreamAgent = YTStreamAgent;
+    this.agent = new YTStreamAgent();
   }
 }
 
-var ytstream = new YTStream();
-
-module.exports = ytstream;
+module.exports = new YTStream();
