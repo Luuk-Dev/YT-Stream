@@ -35,7 +35,7 @@ function search(ytstream, query, options){
 
   var host = 'https://www.youtube.com/results?search_query=';
 
-  let url = host + encodeURIComponent(query) + (_options['type'] !== 'vidoe' ? '&sp=EgIQAQ%253D%253D' : '');
+  let url = host + encodeURIComponent(query) + (_options['type'] !== 'video' ? '&sp=EgIQAQ%253D%253D' : '');
 
   let headers = { 
     'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8,hi;q=0.7',
@@ -47,8 +47,12 @@ function search(ytstream, query, options){
     headers['user-agent'] = userAgent();
   }
 
+  for(const header in ytstream.headers){
+    headers[header] = ytstream.headers[header];
+  }
+
   if(typeof ytstream.cookie === 'string'){
-    headers['cookie'] = ytstream.cookie;
+    headers['cookie'] = ytstream.agent.jar.getCookieStringSync('https://www.youtube.com');
   }
 
   return new Promise((resolve, reject) => {
