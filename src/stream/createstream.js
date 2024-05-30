@@ -92,7 +92,7 @@ function stream(ytstream, info, options){
             if(!validate(ytstream, info)) return reject(`URL is not a valid YouTube URL`);
             try{
                 _info = await getInfo(ytstream, info);
-                const _ci = await cipher.format_decipher(_info.formats, _info.html5player);
+                const _ci = await cipher.format_decipher(_info.formats, _info.html5player, ytstream.agent);
                 _info.formats = _ci;
                 stream_res = await getStreamURL(_info, _options);
             } catch (err) {
@@ -100,7 +100,7 @@ function stream(ytstream, info, options){
             }
         } else if(info instanceof Data){
             try{
-                const _ci = await cipher.format_decipher(_info.formats, _info.html5player);
+                const _ci = await cipher.format_decipher(_info.formats, _info.html5player, ytstream.agent);
                 _info.formats = _ci;
                 stream_res = await getStreamURL(_info, _options);
             } catch (err) {
