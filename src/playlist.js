@@ -40,7 +40,7 @@ function getPlaylist(ytstream, url){
 
         var response;
         try{
-            response = await requestPlayList(request_url, headers);
+            response = await requestPlayList(request_url, headers, ytstream.agent);
         } catch (err){
             reject(err);
         }
@@ -66,7 +66,7 @@ function getPlaylist(ytstream, url){
     });
 }
 
-function requestPlayList(url, headers){
+function requestPlayList(url, headers, agent){
     return new Promise(async (resolve, reject) => {
         
         let options = {
@@ -76,13 +76,13 @@ function requestPlayList(url, headers){
 
         var res;
         try{
-            res = await requestCallback(url, options, false);
+            res = await requestCallback(url, options, agent, false);
         } catch(err) {
             return reject(err);
         }
         
         while(_url((res.headers.location || '')) !== false){
-            res = await requestCallback(res.headers.location, options, false);
+            res = await requestCallback(res.headers.location, options, agent, false);
         }
 
         var response = '';
