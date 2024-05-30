@@ -97,22 +97,46 @@ const ytstream = require('yt-stream');
 })();
 ```
 
-## Setting a cookie
-You can easily set a cookie by changing the `cookie` property to the YouTube cookie. It is also possible to set the cookie using the environment variable `YT_COOKIE`. If both are set the programmatically set one will be used.
-
-The cookie is required to download videos that are age restricted or private.
-```js
-const ytstream = require('yt-stream');
-
-ytstream.cookie = "Your YouTube cookie";
-```
-
 ## Setting a user agent
 You can easily set a user agent by changing the `userAgent` property to a user agent.
 ```js
 const ytstream = require('yt-stream');
 
 ytstream.userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0";
+```
+
+## Setting custom headers
+It is possible to add custom headers which will be added to each request made. This is possible by using the `setGlobalHeaders` function.
+```js
+const ytstream = require('yt-stream');
+
+ytstream.setGlobalHeaders({
+    'Accept-Language': 'en-US,en;q=0.5'
+});
+```
+
+## Agent and cookies
+By default, the YT-Stream package automatically handles all cookies. This is being handled by a custom agent. The settings of this agent and the cookies can be configured. This can be done by creating a new instance of the `YTStreamAgent` and changing the settings of this. The first argument of the constructor should contain an array of cookies you'd like to add inside the request. This array can be left empty. The second argument of the constructor should contain an object with the custom settings for the agent. This custom agent can then be set by using the `setGlobalAgent` function.
+```js
+const ytstream = require('yt-stream');
+
+const agent = new ytstream.YTStreamAgent([{
+    key: 'SOCS',
+    value: 'CAI',
+    domain: 'youtube.com',
+    expires: 'Infinity',
+    sameSite: 'lax',
+    httpOnly: false,
+    hostOnly: false,
+    secure: true,
+    path: '/'
+}], {
+    localAddress: '127.0.0.1',
+    keepAlive: true,
+    keepAliveMsecs: 5e3
+});
+
+ytstream.setGlobalAgent(agent);
 ```
 
 ## Validate YouTube url
