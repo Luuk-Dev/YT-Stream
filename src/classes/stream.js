@@ -82,7 +82,7 @@ class Stream extends EventEmitter{
             headers: {
                 range: `bytes=${this.bytes_count}-${end >= this.content_length ? '' : end}`
             }
-        }, true).then(stream => {
+        }, this.ytstream.agent, true).then(stream => {
             if(Number(stream.statusCode) >= 400){
                 if(this.retryCount === 10){
                     return;
