@@ -1,11 +1,31 @@
 import { Readable } from "stream";
 import { EventEmitter } from "events";
+import { Cookie as ToughCookie } from "tough-cookie";
+import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
+
+type HttpsCookieAgentOptions = ConstructorParameters<typeof HttpsCookieAgent>[0];
+type HttpCookieAgentOptions = ConstructorParameters<typeof HttpCookieAgent>[0];
 
 type convert = string | boolean;
 type download = string | object;
 
+type CookieType = [Cookie | {
+    key?: string;
+    name?: string;
+    value?: string;
+    domain: string;
+    httpOnly?: boolean;
+    hostOnly?: boolean;
+    secure?: boolean;
+    path?: string;
+    expires?: string;
+    expirationDate?: string;
+    sameSite?: string;
+}]
+
 type streamType = "audio" | "video";
 type quality = "high" | "low" | number;
+
 interface downloadOptions{
     type: streamType;
     highWaterMark: number;
@@ -72,29 +92,29 @@ interface YouTubeData{
         url: string;
     };
     formats: [{
-        itag: number;
-        mimeType: string;
-        bitrate: number;
-        width: number;
-        height: number;
-        lastModified: string;
-        contentLength: string;
-        quality: string;
-        fps: number;
-        qualityLabel: string;
-        projectionType: string;
-        avarageBitrate: number;
-        audioQuality: string;
-        approxDurationMs: string;
-        audioSampleRate: string;
-        audioChannels: number;
-        signatureCipher: string;
-		codec: string;
-		container: string;
+        itag?: number;
+        mimeType?: string;
+        bitrate?: number;
+        width?: number;
+        height?: number;
+        lastModified?: string;
+        contentLength?: string;
+        quality?: string;
+        fps?: number;
+        qualityLabel?: string;
+        projectionType?: string;
+        avarageBitrate?: number;
+        audioQuality?: string;
+        approxDurationMs?: string;
+        audioSampleRate?: string;
+        audioChannels?: number;
+        signatureCipher?: string;
+		codec?: string;
+		container?: string;
     }];
     html5player: string;
 	user_agent: string;
-    cookie: string | null;
+    cookie: string;
 }
 
 interface Video{
@@ -196,12 +216,39 @@ export declare function search(query: string) : Promise<[Video]>;
 
 /**
  * Download the YouTube video and create a readable stream of it
- * @param info 
- * @param options 
+ * @param info Either the YouTube url of the video or the received information from the getInfo function
+ * @param options An object that defines options which the stream function should take into account
  */
 export declare function stream(info: download, options: downloadOptions) : Promise<Stream>;
 
+/**
+ * Gets the information of a playlist including the video's inside the playlist
+ * @param url The url of the playlist
+ */
 export declare function getPlaylist(url: string) : Promise<Playlist>;
+
+/**
+ * Adds custom headers to each request made to YouTube
+ * @param headers The headers you'd like to add in each request
+ */
+export declare function setGlobalHeaders(headers: object) : void;
+
+/**
+ * Sets a custom agent which is being used to send the requests with
+ * @param agent An instance of the YTStreamAgent class which represents the HTTP agent
+ */
+export declare function setGlobalAgent(agent: YTStreamAgent) : void;
 
 declare var cookie: string;
 declare var userAgent: string;
+export declare class Cookie extends ToughCookie{}
+
+export declare class YTStreamAgent{
+    constructor(cookies: CookieType, options: HttpsCookieAgentOptions | HttpCookieAgentOptions);
+
+    /**
+     * Adds cookies to the cookies headers which is being send in each request to YouTube
+     * @param cookies An array or an instance of the Cookie class which represents the cookie you want to add
+     */
+    addCookies(cookies: [] | ToughCookie) : void;
+}
