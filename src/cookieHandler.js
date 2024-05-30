@@ -1,6 +1,5 @@
 const { Cookie, CookieJar, canonicalDomain } = require('tough-cookie');
 const { HttpCookieAgent, HttpsCookieAgent } = require('http-cookie-agent/http');
-const os = require('os');
 
 function toDate(cookie){
     if(typeof cookie.expirationDate === 'string'){
@@ -62,19 +61,6 @@ class YTStreamAgent {
             }), 'https://www.youtube.com');
         }
         options.cookies.jar = addCookiesToJar(cookies, options.cookies.jar);
-
-        if(typeof options.localAddress !== 'string'){
-            const ips = [];
-            const interfaces = os.networkInterfaces();
-            for(const name in interfaces){
-                for(const ip of interfaces[name]){
-                    if(!ip.internal){
-                        ips.push(ip.address);
-                    }
-                }
-            }
-            options.localAddress = ips[0];
-        }
 
         this.jar = options.cookies.jar;
         this.agents = {
