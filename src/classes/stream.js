@@ -64,7 +64,7 @@ class Stream extends EventEmitter{
     async retry(){
         const info = await getInfo(this.ytstream, this.video_url);
         
-        const _ci = await cipher.format_decipher(info.formats, info.html5player);
+        const _ci = await cipher.format_decipher(info.formats, info.html5player, this.ytstream.agent);
 
         info.formats = _ci;
 
