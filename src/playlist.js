@@ -28,8 +28,12 @@ function getPlaylist(ytstream, url){
             'user-agent' : userA,
         };
 
+        for(const header in ytstream.headers){
+            headers[header] = ytstream.headers[header];
+        }
+
         if(typeof ytstream.cookie === 'string'){
-            headers['cookie'] = ytstream.cookie;
+            headers['cookie'] = ytstream.agent.jar.getCookieStringSync('https://www.youtube.com');
         }
 
         var request_url = `https://www.youtube.com/playlist?list=${listId}&has_verified=1`;
