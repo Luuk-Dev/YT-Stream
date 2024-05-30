@@ -43,13 +43,14 @@ function getInfo(ytstream, url){
       'user-agent' : userA,
     };
 
-    if(typeof ytstream.cookie === 'string'){
-      headers['cookie'] = ytstream.cookie;
+    for(const header in ytstream.headers){
+      headers[header] = ytstream.headers[header];
     }
+    headers['cookie'] = ytstream.agent.jar.getCookieStringSync('https://www.youtube.com');
 
     request(yturl, {
       headers: headers
-    }).then(async response => {
+    }, ytstream.agent).then(async response => {
       if(response.indexOf(`Our systems have detected unusual traffic from your computer network.`) >= 0) return reject(`YouTube has detected that you are a bot. Try it later again.`);
       var res = response.split('var ytInitialPlayerResponse = ')[1];
 			var html5path = getHTML5player(response);
