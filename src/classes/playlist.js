@@ -6,18 +6,25 @@ class Playlist{
         this.description = data.microformat.microformatDataRenderer.description;
 
         var getAuthorArrayItem = data.sidebar.playlistSidebarRenderer.items.filter(s => typeof s.playlistSidebarSecondaryInfoRenderer !== 'undefined');
-        var authorInfo = getAuthorArrayItem[0].playlistSidebarSecondaryInfoRenderer.videoOwner.videoOwnerRenderer;
-        this.author = (authorInfo.title.runs[0].text ?? '');
-        this.author_images = authorInfo.thumbnail.thumbnails;
-        this.default_author_image = authorInfo.thumbnail.thumbnails[authorInfo.thumbnail.thumbnails.length - 1];
-        this.author_channel = `https://www.youtube.com${authorInfo.navigationEndpoint.commandMetadata.webCommandMetadata.url}`;
+        if(!!getAuthorArrayItem.length){
+            var authorInfo = getAuthorArrayItem[0]?.playlistSidebarSecondaryInfoRenderer?.videoOwner?.videoOwnerRenderer;
+            this.author = (authorInfo?.title?.runs[0]?.text ?? '');
+            this.author_images = authorInfo?.thumbnail?.thumbnails;
+            this.default_author_image = authorInfo?.thumbnail?.thumbnails[authorInfo.thumbnail?.thumbnails?.length - 1];
+            this.author_channel = `https://www.youtube.com${authorInfo?.navigationEndpoint?.commandMetadata?.webCommandMetadata?.url}`;
+        } else {
+            this.author = "YouTube";
+            this.author_images = [];
+            this.default_author_image = undefined;
+            this.author_channel = `https://www.youtube.com/@YouTube`
+        }
 
-        this.url = data.microformat.microformatDataRenderer.urlCanonical;
+        this.url = data?.microformat?.microformatDataRenderer?.urlCanonical;
 
-        var videoInfo = data.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].playlistVideoListRenderer.contents;
+        var videoInfo = data?.contents?.twoColumnBrowseResultsRenderer?.tabs[0]?.tabRenderer?.content?.sectionListRenderer?.contents[0]?.itemSectionRenderer?.contents[0]?.playlistVideoListRenderer?.contents;
         this.videos = [];
         for(var i = 0; i < videoInfo.length; i++){
-            if(typeof videoInfo[i].playlistVideoRenderer === 'undefined') continue;
+            if(typeof videoInfo[i]?.playlistVideoRenderer === 'undefined') continue;
             this.videos.push(new PlaylistVideo(data, videoInfo[i].playlistVideoRenderer));
         }
         this.video_amount = videoInfo.length;
