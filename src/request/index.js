@@ -1,11 +1,14 @@
 const http = require('http');
 const https = require('https');
-const dns = require('dns');
-const { promisify } = require("util");
 const { Cookie } = require('tough-cookie');
 const { YTStreamAgent } = require('../cookieHandler.js');
+const { ValueSaver } = require('valuesaver');
 
-const lookup = promisify(dns.lookup);
+const cache = new ValueSaver();
+
+setInterval(() => {
+  cache.clear();
+}, 6e4);
 
 const requestType = {https: https, http: http};
 
@@ -33,17 +36,13 @@ function request(_url, options, agent, retryCount = 0){
     let response = '';
 
     const url = _validate(_url);
-    if(!url) reject(`Invalid URL`);
+    if(!url) return reject(`Invalid URL`);
+
+    const cachedPage = cache.get(_url);
+    if(cachedPage) return resolve(cachedPage);
 
     const protocol = url.protocol.split(':').join('');
     const prreq = requestType[protocol];
-
-    var dnsInfo;
-    try{
-      dnsInfo = await lookup(url.hostname, {hints: 0});
-    } catch {
-      dnsInfo = {family: 4};
-    }
 
     const http_options = {
       headers: options.headers || {cookie: agent.jar.getCookieStringSync('https://www.youtube.com')},
@@ -51,7 +50,6 @@ function request(_url, options, agent, retryCount = 0){
       host: url.hostname,
       method: options.method || 'GET',
       agent: agent.agents[protocol],
-      family: 4,
       localAddress: agent.localAddress
     };
 
@@ -73,6 +71,7 @@ function request(_url, options, agent, retryCount = 0){
         response += data;
       });
       res.on('end', () => {
+        cache.set(_url, response);
         resolve(response);
       });
       res.on('error', error => {
@@ -98,13 +97,6 @@ function requestCallback(_url, options, agent, parsedOnly = false){
 
         const protocol = url.protocol.split(':').join('');
         const prreq = requestType[protocol];
-    
-        var dnsInfo;
-        try{
-          dnsInfo = await lookup(url.hostname, {hints: 0});
-        } catch {
-          dnsInfo = {family: 4};
-        }
 
         const http_options = {
           headers: options.headers || {cookie: agent.jar.getCookieStringSync('https://www.youtube.com')},
@@ -112,7 +104,6 @@ function requestCallback(_url, options, agent, parsedOnly = false){
           host: url.hostname,
           method: options.method || 'GET',
           agent: agent.agents[protocol],
-          family: dnsInfo.family
         };
 
         if(parsedOnly === false){
