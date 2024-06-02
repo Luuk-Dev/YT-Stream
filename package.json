@@ -1,6 +1,6 @@
 {
   "name": "yt-stream",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "Create easily readable streams from YouTube video url's",
   "main": "index.js",
   "scripts": {
