@@ -31,6 +31,7 @@
   "homepage": "https://github.com/Luuk-Dev/yt-stream#readme",
   "dependencies": {
     "http-cookie-agent": "^6.0.5",
-    "tough-cookie": "^4.1.4"
+    "tough-cookie": "^4.1.4",
+    "valuesaver": "^1.9.3"
   }
 }
