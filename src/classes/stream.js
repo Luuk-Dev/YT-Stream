@@ -82,13 +82,13 @@ class Stream extends EventEmitter{
             headers: {
                 range: `bytes=${this.bytes_count}-${end >= this.content_length ? '' : end}`
             }
-        }, this.ytstream.agent, true).then(stream => {
+        }, this.ytstream.agent, true).then(async stream => {
             if(Number(stream.statusCode) >= 400){
                 if(this.retryCount === 10){
-                    return;
+                    return this.emit('error', 'No valid download url\'s could be found for the YouTube video');
                 } else {
                     ++this.retryCount;
-                    return this.retry();
+                    return await this.retry();
                 }
             }
             var chunkCount = 0;
@@ -112,8 +112,12 @@ class Stream extends EventEmitter{
                     this.ready = true;
                 }
             });
+
+            stream.on('error', err => {
+                this.emit('error', err);
+            });
         }).catch(err => {
-            throw new Error(err);
+            this.emit('error', err);
         });
     }
     pause(){
