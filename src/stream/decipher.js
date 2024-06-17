@@ -1,147 +1,146 @@
 const { request } = require(`../request/index.js`);
+const vm = require('vm');
+const querystring = require('querystring');
+const { URL } = require('url');
 
-const var_js = '[a-zA-Z_\\$][a-zA-Z_0-9]*';
-const singlequote_js = `'[^'\\\\]*(:?\\\\[\\s\\S][^'\\\\]*)*'`;
-const duoblequote_js = `"[^"\\\\]*(:?\\\\[\\s\\S][^"\\\\]*)*"`;
-const quote_js = `(?:${singlequote_js}|${duoblequote_js})`;
-const key_js = `(?:${var_js}|${quote_js})`;
-const prop_js = `(?:\\.${var_js}|\\[${quote_js}\\])`;
-const empty_js = `(?:''|"")`;
-const reverse_function = ':function\\(a\\)\\{' + '(?:return )?a\\.reverse\\(\\)' + '\\}';
-const slice_function = ':function\\(a,b\\)\\{' + 'return a\\.slice\\(b\\)' + '\\}';
-const splice_function = ':function\\(a,b\\)\\{' + 'a\\.splice\\(0,b\\)' + '\\}';
-const swap_function =
-    ':function\\(a,b\\)\\{' +
-    'var c=a\\[0\\];a\\[0\\]=a\\[b(?:%a\\.length)?\\];a\\[b(?:%a\\.length)?\\]=c(?:;return a)?' +
-    '\\}';
-const obj_regexp = new RegExp(
-    `var (${var_js})=\\{((?:(?:${key_js}${reverse_function}|${key_js}${slice_function}|${key_js}${splice_function}|${key_js}${swap_function}),?\\r?\\n?)+)\\};`
-);
-const function_regexp = new RegExp(
-    `${
-        `function(?: ${var_js})?\\(a\\)\\{` + `a=a\\.split\\(${empty_js}\\);\\s*` + `((?:(?:a=)?${var_js}`
-    }${prop_js}\\(a,\\d+\\);)+)` +
-        `return a\\.join\\(${empty_js}\\)` +
-        `\\}`
-);
-const reverse_regexp = new RegExp(`(?:^|,)(${key_js})${reverse_function}`, 'm');
-const slice_regexp = new RegExp(`(?:^|,)(${key_js})${slice_function}`, 'm');
-const splice_regexp = new RegExp(`(?:^|,)(${key_js})${splice_function}`, 'm');
-const swap_regexp = new RegExp(`(?:^|,)(${key_js})${swap_function}`, 'm');
+const ESCAPING_SEQUENZES = [
+    { start: '"', end: '"' },
+    { start: "'", end: "'" },
+    { start: '`', end: '`' },
+    { start: '/', end: '/', startPrefix: /(^|[[{:;,/])\s?$/ },
+  ];
 
-function js_tokens(body) {
-    const function_action = function_regexp.exec(body);
-    const object_action = obj_regexp.exec(body);
-    if (!function_action || !object_action) return null;
-
-    const object = object_action[1].replace(/\$/g, '\\$');
-    const object_body = object_action[2].replace(/\$/g, '\\$');
-    const function_body = function_action[1].replace(/\$/g, '\\$');
-
-    let result = reverse_regexp.exec(object_body);
-    const reverseKey = result && result[1].replace(/\$/g, '\\$').replace(/\$|^'|^"|'$|"$/g, '');
-
-    result = slice_regexp.exec(object_body);
-    const sliceKey = result && result[1].replace(/\$/g, '\\$').replace(/\$|^'|^"|'$|"$/g, '');
-
-    result = splice_regexp.exec(object_body);
-    const spliceKey = result && result[1].replace(/\$/g, '\\$').replace(/\$|^'|^"|'$|"$/g, '');
-
-    result = swap_regexp.exec(object_body);
-    const swapKey = result && result[1].replace(/\$/g, '\\$').replace(/\$|^'|^"|'$|"$/g, '');
-
-    const keys = `(${[reverseKey, sliceKey, spliceKey, swapKey].join('|')})`;
-    const myreg = `(?:a=)?${object}(?:\\.${keys}|\\['${keys}'\\]|\\["${keys}"\\])` + `\\(a,(\\d+)\\)`;
-    const tokenizeRegexp = new RegExp(myreg, 'g');
-    const tokens = [];
-    while ((result = tokenizeRegexp.exec(function_body)) !== null) {
-        const key = result[1] || result[2] || result[3];
-        switch (key) {
-            case swapKey:
-                tokens.push(`sw${result[4]}`);
-                break;
-            case reverseKey:
-                tokens.push('rv');
-                break;
-            case sliceKey:
-                tokens.push(`sl${result[4]}`);
-                break;
-            case spliceKey:
-                tokens.push(`sp${result[4]}`);
-                break;
-        }
+function cutAfterJS(mixedJson){
+    let open, close;
+    if (mixedJson[0] === '[') {
+      open = '[';
+      close = ']';
+    } else if (mixedJson[0] === '{') {
+      open = '{';
+      close = '}';
     }
-    return tokens;
-}
-
-function deciper_signature(tokens, signature) {
-    let sig = signature.split('');
-    const len = tokens.length;
-    for (let i = 0; i < len; i++) {
-        let token = tokens[i],
-            pos;
-        switch (token.slice(0, 2)) {
-            case 'sw':
-                pos = parseInt(token.slice(2));
-                swappositions(sig, pos);
-                break;
-            case 'rv':
-                sig.reverse();
-                break;
-            case 'sl':
-                pos = parseInt(token.slice(2));
-                sig = sig.slice(pos);
-                break;
-            case 'sp':
-                pos = parseInt(token.slice(2));
-                sig.splice(0, pos);
-                break;
-        }
+  
+    if (!open) {
+      throw new Error(`Invalid JSON from HTML5 watch page`);
     }
-    return sig.join('');
-}
-
-function swappositions(array, position) {
-    const first = array[0];
-    array[0] = array[position];
-    array[position] = first;
-}
-
-function download_url(format, sig) {
-    if (!format.url) return;
-
-    const decoded_url = decodeURIComponent(format.url);
-
-    const parsed_url = new URL(decoded_url);
-    parsed_url.searchParams.set('ratebypass', 'yes');
-
-    if (sig) {
-        parsed_url.searchParams.set(format.sp || 'signature', sig);
-    }
-    format.url = parsed_url.toString();
-}
-
-function format_decipher(formats, html5player){
-  return new Promise(async resolve => {
-      const body = await request(html5player, {});
-      const tokens = js_tokens(body);
-      for(var i = 0; i < formats.length; i++){
-        const format = formats[i];
-        const cipher = format.signatureCipher || format.cipher;
-          if(cipher){
-              const params = Object.fromEntries(new URLSearchParams(cipher));
-              Object.assign(format, params);
-              delete format.signatureCipher;
-              delete format.cipher;
+  
+    let isEscapedObject = null;
+  
+    let isEscaped = false;
+  
+    let counter = 0;
+  
+    let i;
+    for (i = 0; i < mixedJson.length; i++) {
+      if (!isEscaped && isEscapedObject !== null && mixedJson[i] === isEscapedObject.end) {
+        isEscapedObject = null;
+        continue;
+      } else if (!isEscaped && isEscapedObject === null) {
+        for (const escaped of ESCAPING_SEQUENZES) {
+          if (mixedJson[i] !== escaped.start) continue;
+          if (!escaped.startPrefix || mixedJson.substring(i - 10, i).match(escaped.startPrefix)) {
+            isEscapedObject = escaped;
+            break;
           }
-          if(tokens && format.s){
-              const sig = deciper_signature(tokens, format.s);
-              download_url(format, sig);
-              delete format.s;
-              delete format.sp;
-          }
+        }
+        if (isEscapedObject !== null) {
+          continue;
+        }
       }
-      resolve(formats);
+  
+      isEscaped = mixedJson[i] === '\\' && !isEscaped;
+  
+      if (isEscapedObject !== null) continue;
+  
+      if (mixedJson[i] === open) {
+        counter++;
+      } else if (mixedJson[i] === close) {
+        counter--;
+      }
+  
+      if (counter === 0) {
+        return mixedJson.substring(0, i + 1);
+      }
+    }
+  
+    throw Error("Invalid JSON (no matching closing bracket found)");
+  };
+
+function extractFunctions(body){
+    const functions = [];
+    const extractManipulations = caller => {
+      const functionName = caller.split(`a=a.split("");`).slice(1).join(`a=a.split("");`).split(`.`)[0];
+      if (!functionName) return '';
+      const functionStart = `var ${functionName}={`;
+      const ndx = body.indexOf(functionStart);
+      if (ndx < 0) return '';
+      const subBody = body.slice(ndx + functionStart.length - 1);
+      return `var ${functionName}=${cutAfterJS(subBody)}`;
+    };
+    const extractDecipher = () => {
+      const functionName = body.split(`a.set("alr","yes");c&&(c=`).slice(1).join(`a.set("alr","yes");c&&(c=`).split(`(decodeURIC`)[0];
+      if (functionName && functionName.length) {
+        const functionStart = `${functionName}=function(a)`;
+        const ndx = body.indexOf(functionStart);
+        if (ndx >= 0) {
+          const subBody = body.slice(ndx + functionStart.length);
+          let functionBody = `var ${functionStart}${cutAfterJS(subBody)}`;
+          functionBody = `${extractManipulations(functionBody)};${functionBody};${functionName}(sig);`;
+          functions.push(functionBody);
+        }
+      }
+    };
+    const extractNCode = () => {
+      let functionName = body.split(`&&(b=a.get("n"))&&(b=`).slice(1).join(`&&(b=a.get("n"))&&(b=`).split(`(b)`)[0];
+      if (functionName.includes('[')) functionName = body.split(`var ${functionName.split('[')[0]}=[`).slice(1).join(`var ${functionName.split('[')[0]}=[`).split(`]`)[0];
+      if (functionName && functionName.length) {
+        const functionStart = `${functionName}=function(a)`;
+        const ndx = body.indexOf(functionStart);
+        if (ndx >= 0) {
+          const subBody = body.slice(ndx + functionStart.length);
+          const functionBody = `var ${functionStart}${cutAfterJS(subBody)};${functionName}(ncode);`;
+          functions.push(functionBody);
+        }
+      }
+    };
+    extractDecipher();
+    extractNCode();
+    return functions;
+};
+
+function setDownloadURL(format, decipherScript, transformScript){
+    const decipher = url => {
+    const args = querystring.parse(url);
+        if (!args.s || !decipherScript) return args.url;
+        const components = new URL(decodeURIComponent(args.url));
+        components.searchParams.set(args.sp ? args.sp : 'signature',
+            decipherScript.runInNewContext({ sig: decodeURIComponent(args.s) }));
+        return components.toString();
+    };
+    const ncode = url => {
+        const components = new URL(decodeURIComponent(url));
+        const n = components.searchParams.get('n');
+        if (!n || !transformScript) return url;
+        components.searchParams.set('n', transformScript.runInNewContext({ ncode: n }));
+        return components.toString();
+    };
+    const cipher = !format.url;
+    const url = format.url || format.signatureCipher || format.cipher;
+    format.url = cipher ? ncode(decipher(url)) : ncode(url);
+    delete format.signatureCipher;
+    delete format.cipher;
+}
+
+function format_decipher(formats, html5player, agent){
+  return new Promise(async resolve => {
+    const body = await request(html5player, {headers: {cookie: agent.jar.getCookieStringSync('https://www.youtube.com')}}, agent);
+    const extractedFunctions = extractFunctions(body);
+    const decipherScript = extractedFunctions.length ? new vm.Script(extractedFunctions[0]) : null;
+    const transformScript = extractedFunctions.length > 1 ? new vm.Script(extractedFunctions[1]) : null;
+    for(let i = 0; i < formats.length; i++){
+        setDownloadURL(formats[i], decipherScript, transformScript);
+    }
+    resolve(formats);
   });
 }
 
