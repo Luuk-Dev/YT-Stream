@@ -1,6 +1,8 @@
 const request = require('../request/index.js').request;
 const SearchData = require('../classes/searchdata.js');
 const userAgent = require('../request/useragent.js').getRandomUserAgent;
+const fs = require('fs');
+const path = require('path');
 
 function defaultExtractor(response, headers){
   var res = response;
@@ -11,7 +13,22 @@ function defaultExtractor(response, headers){
 
   const json = JSON.parse(res);
 
-  const videos = json.contents.twoColumnSearchResultsRenderer.primaryContents.sectionListRenderer.contents[0].itemSectionRenderer.contents;
+  fs.writeFileSync(path.join(__dirname, `../../test.json`), JSON.stringify(json, null, 2))
+
+  const videos = [];
+
+  const itemSectionRenders = json.contents.twoColumnSearchResultsRenderer.primaryContents.sectionListRenderer.contents;
+  for(const itemSectionRender of itemSectionRenders){
+    if(typeof itemSectionRender.itemSectionRenderer !== 'object') continue;
+    if(typeof itemSectionRender.itemSectionRenderer.contents !== 'object') continue;
+    for(const content of itemSectionRender.itemSectionRenderer.contents){
+      const contentKeys = Object.keys(content);
+      if(contentKeys.indexOf('videoRenderer') >= 0){
+        videos.push(content);
+      }
+    }
+  }
+
 
   const results = [];
   
