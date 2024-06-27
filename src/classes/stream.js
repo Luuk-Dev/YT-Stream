@@ -44,6 +44,7 @@ class Stream extends EventEmitter{
         this.video_url = options.video_url;
         this.quality = options.quality;
         this.info = info;
+        this.mimeType = options.format.mimeType;
 
         this.bytes_count = 0;
         this.content_length = parseInt(options.contentLength);
