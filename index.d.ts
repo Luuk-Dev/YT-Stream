@@ -45,6 +45,7 @@ interface Stream extends EventEmitter{
     type: string;
     req_type: string;
     per_sec_bytes: number;
+    mimeType: string;
     format: {
         itag: number;
         mimeType: string;
