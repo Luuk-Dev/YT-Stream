@@ -139,6 +139,28 @@ const agent = new ytstream.YTStreamAgent([{
 ytstream.setGlobalAgent(agent);
 ```
 
+The cookies can afterwards be removed by using the `removeCookies` function of the `YTStreamAgent` class. The `removeCookies` function provides one optional argument which should be a boolean. The boolean determines whether all cookies shall be removed (forced) or only the cookies which were cached from previous requests.
+```js
+const agent = new ytstream.YTStreamAgent([{
+    key: 'SOCS',
+    value: 'CAI',
+    domain: 'youtube.com',
+    expires: 'Infinity',
+    sameSite: 'lax',
+    httpOnly: false,
+    hostOnly: false,
+    secure: true,
+    path: '/'
+}], {
+    localAddress: '127.0.0.1',
+    keepAlive: true,
+    keepAliveMsecs: 5e3
+});
+
+agent.removeCookies(false) // Only removes cached cookies
+agent.removeCookies(true) // Also removes manually set cookies inside the constructor
+```
+
 ## Validate YouTube url
 You can validate a YouTube url by using the `validateURL` function. The function requires one parameter which is the string to check whether it is a valid YouTube url or not.
 > Important: This also validates playlists, to only validate video's use the `validateVideoURL` function.
