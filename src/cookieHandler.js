@@ -68,11 +68,49 @@ class YTStreamAgent {
             http: new HttpCookieAgent(options)
         };
         this.localAddress = options.localAddress;
+        this._options = options;
+        this._cookies = cookies;
     }
     addCookies(cookies){
         if(!Array.isArray(cookies)) cookies = [];
         if(!(this.jar instanceof CookieJar)) throw new Error(`Jar property is not an instance of CookieJar`);
         this.jar = addCookiesToJar(cookies, this.jar);
+    }
+    removeCookies(force){
+        if(force){
+            if(Object.keys(this._options).indexOf('cookies') >= 0) delete this._options.cookies;
+            this.jar = new CookieJar();
+            let options = {..._this._options, cookies: {jar: this.jar}};
+            this.agents = {
+                https: new HttpsCookieAgent(options),
+                http: new HttpCookieAgent(options)
+            };
+        } else {
+            if(!(this._options.cookies?.jar instanceof CookieJar)){
+                this._options.cookies = {};
+                this._options.cookies.jar = new CookieJar();
+            }
+    
+            if(!!!this._cookies.filter(c => c.name === 'SOCS').length){
+                this._options.cookies.jar.setCookieSync(new Cookie({
+                    key: 'SOCS',
+                    value: 'CAI',
+                    sameSite: 'lax',
+                    hostOnly: false,
+                    secure: true,
+                    path: '/',
+                    httpOnly: false,
+                    domain: 'youtube.com'
+                }), 'https://www.youtube.com');
+            }
+            this._options.cookies.jar = addCookiesToJar(this._cookies, this._options.cookies.jar);
+    
+            this.jar = this._options.cookies.jar;
+            this.agents = {
+                https: new HttpsCookieAgent(this._options),
+                http: new HttpCookieAgent(this._options)
+            };
+        }
     }
 }
 
