@@ -242,6 +242,7 @@ export declare function setGlobalAgent(agent: YTStreamAgent) : void;
 
 declare var cookie: string;
 declare var userAgent: string;
+
 export declare class Cookie extends ToughCookie{}
 
 export declare class YTStreamAgent{
@@ -252,4 +253,10 @@ export declare class YTStreamAgent{
      * @param cookies An array or an instance of the Cookie class which represents the cookie you want to add
      */
     addCookies(cookies: [] | ToughCookie) : void;
+
+    /**
+     * Removes the cookies which the agent has saved
+     * @param force True to remove manually set cookies as well, false to only remove cached cookies (default false)
+     */
+    removeCookies(force?: boolean) : void;
 }
