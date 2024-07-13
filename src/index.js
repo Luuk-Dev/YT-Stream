@@ -2,7 +2,7 @@ const validate = require('./validate.js');
 const getInfo = require('./info.js').getInfo;
 const getPlaylist = require('./playlist.js').getPlaylist;
 const convert = require('./convert.js');
-const { Cookie } = require('tough-cookie');
+const { Cookie, CookieJar } = require('tough-cookie');
 const { YTStreamAgent } = require('./cookieHandler.js');
 const stream = require('./stream/createstream.js').stream;
 const search = require('./search/index.js').search;
@@ -43,8 +43,23 @@ class YTStream{
       return search(this, ...args);
     };
     this.setGlobalAgent = (agent) => {
-      if(!(agent instanceof YTStreamAgent)) throw new Error(`Global agent must be an instance of YTStreamAgent`);
-      this.agent = agent;
+      if(typeof agent === 'object'){
+        if(agent instanceof YTStreamAgent){
+          this.agent = agent;
+        } else {
+          this.agent = {
+            agents: {},
+            jar: new CookieJar()
+          };
+          if(typeof agent.https === 'object' || typeof agent.http === 'object'){
+            this.agent.agents['https'] = agent.https ?? agent.http;
+            this.agent.agents['http'] = agent.http ?? agent.https;
+          } else {
+            this.agent.agents['https'] = agent;
+            this.agent.agents['http'] = agent;
+          }
+        }
+      } else throw new Error(`Agent is not a valid agent`);
     };
     this.setGlobalHeaders = (headers) => {
       if(typeof headers !== 'object' || Array.isArray(headers) || headers === null) throw new Error(`Invalid headers. Headers must be a type of object and may not be an Array or null.`);
