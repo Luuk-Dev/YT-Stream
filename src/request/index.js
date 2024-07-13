@@ -32,7 +32,6 @@ function handleCookies(res, agent){
 function request(_url, options, agent, retryCount = 0){
   return new Promise(async (resolve, reject) => {
     if(typeof _url !== 'string') return reject(`URL is not a string`);
-    if(!(agent instanceof YTStreamAgent)) return reject(`Agent is not an instance of YTStreamAgent`);
     let response = '';
 
     const url = _validate(_url);
@@ -49,7 +48,7 @@ function request(_url, options, agent, retryCount = 0){
       path: url.pathname + url.search,
       host: url.hostname,
       method: options.method || 'GET',
-      agent: agent.agents[protocol],
+      agent: agent instanceof YTStreamAgent ? agent.agents[protocol] : (typeof agent === 'object' ? (typeof agent.agents === 'object' ? agent.agents[protocol] : agent) : undefined),
       localAddress: agent.localAddress
     };
 
@@ -90,7 +89,6 @@ function request(_url, options, agent, retryCount = 0){
 function requestCallback(_url, options, agent, parsedOnly = false){
     return new Promise(async (resolve, reject) => {
         if(typeof _url !== 'string') return reject(`URL is not a string`);
-        if(!(agent instanceof YTStreamAgent)) return reject(`Agent is not an instance of YTStreamAgent`);
   
         const url = _validate(_url);
         if(!(url instanceof URL)) reject(`Invalid URL`);
@@ -103,7 +101,7 @@ function requestCallback(_url, options, agent, parsedOnly = false){
           path: url.pathname + url.search,
           host: url.hostname,
           method: options.method || 'GET',
-          agent: agent.agents[protocol],
+          agent: agent instanceof YTStreamAgent ? agent.agents[protocol] : (typeof agent === 'object' ? (typeof agent.agents === 'object' ? agent.agents[protocol] : agent) : undefined),
         };
 
         if(parsedOnly === false){
