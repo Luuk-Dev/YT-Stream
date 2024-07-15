@@ -103,10 +103,11 @@ function requestCallback(_url, options, agent, parsedOnly = false){
           host: url.hostname,
           method: options.method || 'GET',
           agent: agent instanceof YTStreamAgent ? agent.agents[protocol] : (typeof agent === 'object' ? (typeof agent.agents === 'object' ? agent.agents[protocol] : agent) : undefined),
+          localAddress: agent.localAddress
         };
 
         if(parsedOnly === false){
-          const req = prreq.request(http_options, resolve);
+          const req = prreq.request(http_options, stream => resolve({stream, req: req}));
 
           req.on('error', error => {
               reject(error);
@@ -114,7 +115,7 @@ function requestCallback(_url, options, agent, parsedOnly = false){
 
           req.end();
         } else {
-          const req = prreq.request(url, resolve);
+          const req = prreq.request(url, stream => resolve({stream, req: req}));
 
           req.on('error', error => {
               reject(error);
