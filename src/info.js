@@ -12,7 +12,7 @@ function getHTML5player(response){
   return html5playerRes ? html5playerRes[1] || html5playerRes[2] : null;
 };
 
-function getInfo(ytstream, url){
+function getInfo(ytstream, url, force = false){
   return new Promise((resolve, reject) => {
     if(typeof url !== 'string') throw new Error(`URL is not a string`);
 
@@ -50,7 +50,7 @@ function getInfo(ytstream, url){
 
     request(yturl, {
       headers: headers
-    }, ytstream.agent).then(async response => {
+    }, ytstream.agent, 0, force).then(async response => {
       if(response.indexOf(`Our systems have detected unusual traffic from your computer network.`) >= 0) return reject(`YouTube has detected that you are a bot. Try it later again.`);
       var res = response.split('var ytInitialPlayerResponse = ')[1];
 			var html5path = getHTML5player(response);
