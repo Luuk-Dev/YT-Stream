@@ -4,7 +4,6 @@ const { requestCallback } = require("./request/index.js");
 const userAgent = require("./request/useragent.js").getRandomUserAgent;
 const { getID } = require("./convert.js");
 const Playlist = require("./classes/playlist.js");
-const { YTStreamAgent } = require("./cookieHandler.js");
 
 function getPlaylist(ytstream, url){
     return new Promise(async (resolve, reject) => {
@@ -33,9 +32,7 @@ function getPlaylist(ytstream, url){
             headers[header] = ytstream.headers[header];
         }
 
-        if(typeof ytstream.cookie === 'string'){
-            headers['cookie'] = ytstream.agent instanceof YTStreamAgent ? ytstream.agent.jar.getCookieStringSync('https://www.youtube.com') : undefined;
-        }
+        headers['cookie'] = ytstream.agent.jar.getCookieStringSync('https://www.youtube.com');
 
         var request_url = `https://www.youtube.com/playlist?list=${listId}&has_verified=1`;
 
