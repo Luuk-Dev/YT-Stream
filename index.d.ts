@@ -70,6 +70,11 @@ interface Stream extends EventEmitter{
 		container: string;
     };
     info: YouTubeData;
+
+    /**
+     * Destroys the stream and stops downloading the audio if a download was still going on
+     */
+    destroy() : void;
 }
 
 interface YouTubeData{
