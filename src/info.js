@@ -4,6 +4,7 @@ const request = require('./request/index.js').request;
 const YouTubeData = require('./classes/ytdata.js');
 const userAgent = require('./request/useragent.js').getRandomUserAgent;
 const { getID } = require('./convert.js');
+const { YTStreamAgent } = require('./cookieHandler.js');
 
 function getHTML5player(response){
   let html5playerRes =
@@ -46,7 +47,7 @@ function getInfo(ytstream, url, force = false){
     for(const header in ytstream.headers){
       headers[header] = ytstream.headers[header];
     }
-    headers['cookie'] = ytstream.agent.jar.getCookieStringSync('https://www.youtube.com');
+    headers['cookie'] = ytstream.agent instanceof YTStreamAgent ? ytstream.agent.jar.getCookieStringSync('https://www.youtube.com') : undefined;
 
     request(yturl, {
       headers: headers
