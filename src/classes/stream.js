@@ -78,15 +78,14 @@ class Stream extends EventEmitter{
         this.url = typeof this.quality === 'number' ? (audioFormat[this.quality] ? audioFormat[this.quality].url : audioFormat[audioFormat.length - 1].url) : audioFormat[0].url;
         this.loop();
     }
-    loop(){
-        let end = this.bytes_count + this.per_sec_byte * 300;
-        
+    loop(){        
         requestCallback(this.url, {
             headers: {
-                range: `bytes=${this.bytes_count}-${end >= this.content_length ? '' : end}`
+                range: `bytes=0-`
             },
             method: 'GET'
-        }, this.ytstream.agent, true).then(async stream => {
+        }, this.ytstream.agent, false).then(async ({stream, req}) => {
+            this.req = req;
             if(Number(stream.statusCode) >= 400){
                 if(this.retryCount === 10){
                     return this.emit('error', 'No valid download url\'s could be found for the YouTube video');
@@ -98,7 +97,6 @@ class Stream extends EventEmitter{
             var chunkCount = 0;
             stream.on('data', chunk => {
                 this.bytes_count += chunk.length;
-                end = this.bytes_count + this.per_sec_byte * 300;
                 this.stream.push(chunk);
                 ++chunkCount;
                 if(chunkCount === 3){
@@ -108,13 +106,11 @@ class Stream extends EventEmitter{
             });
 
             stream.on('end', () => {
-                if(end >= this.content_length){
-                    this.stream.push(null);
-                }
                 if(chunkCount < 3){
                     this.emit('ready');
                     this.ready = true;
                 }
+                this.stream.push(null);
             });
 
             stream.on('error', err => {
@@ -129,6 +125,10 @@ class Stream extends EventEmitter{
     }
     resume(){
       this.stream.resume();
+    }
+    destroy(){
+        this.req.destroy();
+        this.stream.destroy();
     }
 	ready = false;
 }
