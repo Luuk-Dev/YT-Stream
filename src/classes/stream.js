@@ -1,7 +1,8 @@
 const { Readable } = require('stream');
 const { EventEmitter } = require('events');
+const { URL } = require('url');
 const cipher = require('../stream/decipher.js');
-const { requestCallback } = require('../request/index.js');
+const { requestCallback, request } = require('../request/index.js');
 const { YTStreamAgent } = require('../cookieHandler.js');
 const getInfo = require('../info.js').getInfo;
 
@@ -78,21 +79,40 @@ class Stream extends EventEmitter{
         this.url = typeof this.quality === 'number' ? (audioFormat[this.quality] ? audioFormat[this.quality].url : audioFormat[audioFormat.length - 1].url) : audioFormat[0].url;
         this.loop();
     }
-    loop(){        
+    async loop(){    
+        let parsed = new URL(this.url);
+        
+        try{
+            await request(parsed.protocol+"//"+parsed.host+"/generate_204", {
+                method: 'GET'
+            }, this.ytstream.agent, 0, true);
+        } catch {
+            ++this.retryCount;
+            if(this.retryCount >= 10){
+                return this.emit('error', 'Failed to get valid content');
+            } else return this.loop();
+        }
+
         requestCallback(this.url, {
             headers: {
-                range: `bytes=0-`
+                range: `bytes=0-${this.content_length}`
             },
             method: 'GET'
         }, this.ytstream.agent, false).then(async ({stream, req}) => {
             this.req = req;
             if(Number(stream.statusCode) >= 400){
-                if(this.retryCount === 10){
+                if(this.retryCount >= 10){
                     return this.emit('error', 'No valid download url\'s could be found for the YouTube video');
                 } else {
                     ++this.retryCount;
                     return await this.retry();
                 }
+            } else if(Number(stream.statusCode) >= 300 && Object.keys(stream.headers).map(h => h.toLowerCase()).indexOf('location') >= 0){
+                ++this.retryCount;
+                const headerKeys = Object.keys(stream.headers).map(h => h.toLowerCase());
+                const headerValues = Object.values(stream.headers);
+                this.url = headerValues[headerKeys.indexOf('location')];
+                return this.loop(); 
             }
             var chunkCount = 0;
             stream.on('data', chunk => {
