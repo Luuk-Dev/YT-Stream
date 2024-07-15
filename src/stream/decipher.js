@@ -1,6 +1,7 @@
 const { URLSearchParams } = require('url');
 const { request } = require(`../request/index.js`);
 const vm = require('vm');
+const { YTStreamAgent } = require('../cookieHandler.js');
 
 async function getFunctions(html5playerfile, options){
   const body = await request(html5playerfile, options, options.agent);
@@ -170,7 +171,7 @@ function setDownloadURL(format, decipherScript, nTransformScript){
 
 function format_decipher(formats, html5player, agent){
   return new Promise(async resolve => {
-    const [decipherScript, nTransformScript] = await getFunctions(html5player, {headers: {cookie: agent.jar.getCookieStringSync('https://www.youtube.com')}, agent});
+    const [decipherScript, nTransformScript] = await getFunctions(html5player, {headers: {cookie: agent instanceof YTStreamAgent ? agent.jar.getCookieStringSync('https://www.youtube.com') : undefined}, agent});
     for(let format of formats){
       setDownloadURL(format, decipherScript, nTransformScript);
     };
