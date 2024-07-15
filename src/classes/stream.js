@@ -63,7 +63,8 @@ class Stream extends EventEmitter{
         }
     }
     async retry(){
-        const info = await getInfo(this.ytstream, this.video_url);
+        this.ytstream.agent.removeCookies(false);
+        const info = await getInfo(this.ytstream, this.video_url, true);
         
         const _ci = await cipher.format_decipher(info.formats, info.html5player, this.ytstream.agent);
 
@@ -82,7 +83,8 @@ class Stream extends EventEmitter{
         requestCallback(this.url, {
             headers: {
                 range: `bytes=${this.bytes_count}-${end >= this.content_length ? '' : end}`
-            }
+            },
+            method: 'GET'
         }, this.ytstream.agent, true).then(async stream => {
             if(Number(stream.statusCode) >= 400){
                 if(this.retryCount === 10){
