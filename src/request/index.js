@@ -45,7 +45,7 @@ function request(_url, options, agent, retryCount = 0, force = false){
     const prreq = requestType[protocol];
 
     const http_options = {
-      headers: options.headers || {cookie: agent instanceof YTStreamAgent ? agent.jar.getCookieStringSync('https://www.youtube.com') : undefined},
+      headers: options.headers || {cookie: agent.jar.getCookieStringSync('https://www.youtube.com')},
       path: url.pathname + url.search,
       host: url.hostname,
       method: options.method || 'GET',
@@ -98,7 +98,7 @@ function requestCallback(_url, options, agent, parsedOnly = false){
         const prreq = requestType[protocol];
 
         const http_options = {
-          headers: options.headers || {cookie: agent instanceof YTStreamAgent ? agent.jar.getCookieStringSync('https://www.youtube.com') : undefined},
+          headers: options.headers || {cookie: agent.jar.getCookieStringSync('https://www.youtube.com')},
           path: url.pathname + url.search,
           host: url.hostname,
           method: options.method || 'GET',
