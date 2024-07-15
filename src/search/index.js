@@ -1,8 +1,6 @@
 const request = require('../request/index.js').request;
 const SearchData = require('../classes/searchdata.js');
 const userAgent = require('../request/useragent.js').getRandomUserAgent;
-const fs = require('fs');
-const path = require('path');
 const { YTStreamAgent } = require('../cookieHandler.js');
 
 function defaultExtractor(response, headers){
@@ -13,9 +11,6 @@ function defaultExtractor(response, headers){
   res = res.split(';</script>')[0];
 
   const json = JSON.parse(res);
-
-  fs.writeFileSync(path.join(__dirname, `../../test.json`), JSON.stringify(json, null, 2))
-
   const videos = [];
 
   const itemSectionRenders = json.contents.twoColumnSearchResultsRenderer.primaryContents.sectionListRenderer.contents;
