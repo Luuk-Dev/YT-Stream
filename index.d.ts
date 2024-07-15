@@ -2,6 +2,8 @@ import { Readable } from "stream";
 import { EventEmitter } from "events";
 import { Cookie as ToughCookie } from "tough-cookie";
 import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
+import { Agent as HttpsAgent } from "https";
+import { Agent as HttpAgent } from "http";
 
 type HttpsCookieAgentOptions = ConstructorParameters<typeof HttpsCookieAgent>[0];
 type HttpCookieAgentOptions = ConstructorParameters<typeof HttpCookieAgent>[0];
@@ -164,8 +166,9 @@ interface Playlist{
 /**
  * Get information about a song
  * @param url The YouTube url of the song
+ * @param boolean A boolean which defines whether the package should force send a request to YouTube to receive the data or whether it can use cached data as well
  */
-export declare function getInfo(url: string) : Promise<YouTubeData>;
+export declare function getInfo(url: string, force?: boolean) : Promise<YouTubeData>;
 
 /**
  * Check whether the YouTube video ID is valid or not
@@ -238,7 +241,7 @@ export declare function setGlobalHeaders(headers: object) : void;
  * Sets a custom agent which is being used to send the requests with
  * @param agent An instance of the YTStreamAgent class which represents the HTTP agent
  */
-export declare function setGlobalAgent(agent: YTStreamAgent) : void;
+export declare function setGlobalAgent(agent: YTStreamAgent | {https: HttpsAgent | HttpsCookieAgent | any, http: HttpAgent | HttpCookieAgent | any} | any) : void;
 
 declare var cookie: string;
 declare var userAgent: string;
