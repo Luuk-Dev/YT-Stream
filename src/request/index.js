@@ -15,6 +15,7 @@ const requestType = {https: https, http: http};
 const _validate = require('./url.js');
 
 function handleCookies(res, agent){
+  if(!(agent instanceof YTStreamAgent)) return;
   const headerKeys = Object.keys(res.headers).map(h => h.toLowerCase());
   const headerValues = Object.values(res.headers);
   
@@ -29,7 +30,7 @@ function handleCookies(res, agent){
   }
 }
 
-function request(_url, options, agent, retryCount = 0){
+function request(_url, options, agent, retryCount = 0, force = false){
   return new Promise(async (resolve, reject) => {
     if(typeof _url !== 'string') return reject(`URL is not a string`);
     let response = '';
@@ -38,7 +39,7 @@ function request(_url, options, agent, retryCount = 0){
     if(!url) return reject(`Invalid URL`);
 
     const cachedPage = cache.get(_url);
-    if(cachedPage) return resolve(cachedPage);
+    if(cachedPage && !force) return resolve(cachedPage);
 
     const protocol = url.protocol.split(':').join('');
     const prreq = requestType[protocol];
@@ -59,7 +60,7 @@ function request(_url, options, agent, retryCount = 0){
           const headerValues = Object.values(res.headers);
           const locationIndex = headersKeys.indexOf('location');
           if(locationIndex >= 0){
-            request(headerValues[locationIndex], options, agent, ++retryCount).then(resolve).catch(reject);
+            request(headerValues[locationIndex], options, agent, ++retryCount, force).then(resolve).catch(reject);
           }
         }
         return reject(`Error while receiving information. Server returned with status code ${res.statusCode}.`);
