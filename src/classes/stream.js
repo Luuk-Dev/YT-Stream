@@ -2,6 +2,7 @@ const { Readable } = require('stream');
 const { EventEmitter } = require('events');
 const cipher = require('../stream/decipher.js');
 const { requestCallback } = require('../request/index.js');
+const { YTStreamAgent } = require('../cookieHandler.js');
 const getInfo = require('../info.js').getInfo;
 
 function parseAudio(formats){
@@ -63,7 +64,7 @@ class Stream extends EventEmitter{
         }
     }
     async retry(){
-        this.ytstream.agent.removeCookies(false);
+        if(this.ytstream.agent instanceof YTStreamAgent) this.ytstream.agent.removeCookies(false);
         const info = await getInfo(this.ytstream, this.video_url, true);
         
         const _ci = await cipher.format_decipher(info.formats, info.html5player, this.ytstream.agent);
