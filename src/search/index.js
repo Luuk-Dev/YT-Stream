@@ -3,6 +3,7 @@ const SearchData = require('../classes/searchdata.js');
 const userAgent = require('../request/useragent.js').getRandomUserAgent;
 const fs = require('fs');
 const path = require('path');
+const { YTStreamAgent } = require('../cookieHandler.js');
 
 function defaultExtractor(response, headers){
   var res = response;
@@ -69,7 +70,7 @@ function search(ytstream, query, options){
   }
 
   if(typeof ytstream.cookie === 'string'){
-    headers['cookie'] = ytstream.agent.jar.getCookieStringSync('https://www.youtube.com');
+    headers['cookie'] = ytstream.agent instanceof YTStreamAgent ? ytstream.agent.jar.getCookieStringSync('https://www.youtube.com') : undefined;
   }
 
   return new Promise((resolve, reject) => {
