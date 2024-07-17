@@ -20,7 +20,7 @@ function getInfo(ytstream, url, force = false){
     if(!validation) throw new Error(`Invalid YouTube video URL`);
 
     var ytid = null;
-    const parsed = _url(url);
+    let parsed = _url(url);
     if(['youtube.com', 'music.youtube.com'].includes(parsed.hostname.toLowerCase().split('www.').join(''))) ytid = getID(ytstream, url);
     else if(parsed.hostname.toLowerCase().split('www.').join('') === `youtu.be`){
       if(parsed.pathname.toLowerCase().startsWith('/watch')){
@@ -52,8 +52,8 @@ function getInfo(ytstream, url, force = false){
       headers: headers
     }, ytstream.agent, 0, force).then(async response => {
       if(response.indexOf(`Our systems have detected unusual traffic from your computer network.`) >= 0) return reject(`YouTube has detected that you are a bot. Try it later again.`);
-      var res = response.split('var ytInitialPlayerResponse = ')[1];
-			var html5path = getHTML5player(response);
+      let res = response.split('var ytInitialPlayerResponse = ')[1];
+			let html5path = getHTML5player(response);
       const html5player = typeof html5path === 'string' ? `https://www.youtube.com${html5path}` : null;
       if(!res){
         reject(`The YouTube song has no initial player response`);
@@ -73,15 +73,22 @@ function getInfo(ytstream, url, force = false){
         reject(`The YouTube song has no initial player response`);
         return;
       }
-      var seperate = res.split(/};[a-z]/);
+      let seperate = res.split(/}};[a-z]/);
+      let jsonObject = (seperate[0] + "}}").split('\\"').join('\"').split("\\'").join("\'").split("\\`").join("\`");
+      let splitVars = jsonObject.split(/['|"|`]playerVars['|"|`]:/);
+      while(splitVars.length > 1){
+        jsonObject = splitVars[0] + splitVars.slice(1).join("\"playersVars\":").split(/}}['|"|`],/).slice(1).join("}}\",");
+        splitVars = jsonObject.split(/['|"|`]playerVars['|"|`]:/);
+      }
+      let data;
       try{
-        var data = JSON.parse(seperate[0]+"}");
+        data = JSON.parse(jsonObject);
       } catch {
         reject(`The YouTube song has no initial player response`);
         return;
       }
       if (data.playabilityStatus.status !== 'OK'){
-        var error = data.playabilityStatus.errorScreen.playerErrorMessageRenderer ? data.playabilityStatus.errorScreen.playerErrorMessageRenderer.reason.simpleText : data.playabilityStatus.errorScreen.playerKavRenderer.reason.simpleText;
+        let error = data.playabilityStatus.errorScreen.playerErrorMessageRenderer ? data.playabilityStatus.errorScreen.playerErrorMessageRenderer.reason.simpleText : data.playabilityStatus.errorScreen.playerKavRenderer.reason.simpleText;
 
         reject(`Error while getting video url\n${error}`);
       } else resolve(new YouTubeData(data, html5player, headers));
