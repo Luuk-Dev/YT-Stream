@@ -267,4 +267,10 @@ export declare class YTStreamAgent{
      * @param force True to remove manually set cookies as well, false to only remove cached cookies (default false)
      */
     removeCookies(force?: boolean) : void;
+
+    /**
+     * Import cookies from a json file and sync them with the cookies YouTube provides so they stay up-to-date
+     * @param filePath The path to the file of the cookies (absolute or from the cwd)
+     */
+    syncFile(filePath: string) : void;
 }
