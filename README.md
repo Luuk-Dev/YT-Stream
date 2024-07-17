@@ -17,6 +17,8 @@ Optional options are:
 * quality: The quality of the video (high or low)
 * highWaterMark: The highWaterMark for the Readable stream
 * download: A boolean which defines whether to automatically download and push the chunks in the Readable stream (`stream` property of the `Stream` class) the video or not (default `true`)
+
+> Warning: By setting the `download` option to `false`, it is not guaranteed that the provided url contains the requested video/audio. Make sure to check for any possible location headers when making a request to this url.
 ```js
 const ytstream = require('yt-stream');
 const fs = require('fs');
@@ -116,7 +118,7 @@ ytstream.setGlobalHeaders({
 ```
 
 ## Agent and cookies
-By default, the YT-Stream package automatically handles all cookies. This is being handled by a custom agent. The settings of this agent and the cookies can be configured. This can be done by creating a new instance of the `YTStreamAgent` and changing the settings of this. The first argument of the constructor should contain an array of cookies you'd like to add inside the request. This array can be left empty. The second argument of the constructor should contain an object with the custom settings for the agent. This custom agent can then be set by using the `setGlobalAgent` function.
+By default, the YT-Stream package automatically handles all cookies. This is being handled by a custom agent. The settings of this agent and the cookies can be configured. This can be done by creating a new instance of the `YTStreamAgent` and changing the settings of this. The first argument of the constructor should eiither contain an array of cookies you'd like to add inside the request or a string which represents the file containing the cookies which will be used and synced. If you don't want to add any cookies, you can use an empty array here. The second argument of the constructor should contain an object with the custom settings for the agent. This custom agent can then be set by using the `setGlobalAgent` function.
 ```js
 const ytstream = require('yt-stream');
 
@@ -159,6 +161,21 @@ const agent = new ytstream.YTStreamAgent([{
 
 agent.removeCookies(false) // Only removes cached cookies
 agent.removeCookies(true) // Also removes manually set cookies inside the constructor
+```
+
+You can also sync the cookies with a file. The cookies inside this file will be imported and if YouTube sets new cookies or updates existing ones, these will be changed inside this file as well. You can use the `syncFile` function to synchronize a file containing the cookies. This file **must** be a json file and should contain an array with the cookies inside of it. The `syncFile` function requires one argument, which should be the path to the file. The path should either be absolute or relative from the root folder of the process. Otherwise the agent won't be able to find the file.
+
+```js
+const path = require('path');
+
+const agent = new ytstream.YTStreamAgent([], {
+    localAddress: '127.0.0.1',
+    keepAlive: true,
+    keepAliveMsecs: 5e3
+});
+
+agent.syncFile(path.join(__dirname, `./cookies.json`)) // This is an absolute path which will always work
+agent.syncFile(`./cookies.json`) // This is a relative path which will only work if the cookies.json file is inside the root folder of the process
 ```
 
 ## Validate YouTube url
