@@ -1,5 +1,7 @@
 const { Cookie, CookieJar, canonicalDomain } = require('tough-cookie');
 const { HttpCookieAgent, HttpsCookieAgent } = require('http-cookie-agent/http');
+const fs = require('fs');
+const path = require('path');
 
 function toDate(cookie){
     if(typeof cookie.expirationDate === 'string'){
@@ -9,7 +11,7 @@ function toDate(cookie){
         if(cookie.expires.toLowerCase() === 'infinity') return 'Infinity';
         return new Date(cookie.expires);
     } else if(typeof cookie.expirationDate === 'number'){
-        return new Date(expirationDate * 1000);
+        return new Date(cookie.expirationDate * 1000);
     } else if(typeof cookie.expires === 'number'){
         return new Date(cookie.expires * 1000);
     } else return 'Infinity';
@@ -40,41 +42,49 @@ function addCookiesToJar(cookies, jar){
 
 class YTStreamAgent {
     constructor(cookies, options){
-        if(!Array.isArray(cookies)) cookies = [];
         if(typeof options !== 'object' || Array.isArray(options) || options === null) options = {timeout: 5000, keepAlive: true, keepAliveMsecs: (Math.round(Math.random() * 3) + 5)};
 
         if(!(options.cookies?.jar instanceof CookieJar)){
             options.cookies = {};
             options.cookies.jar = new CookieJar();
         }
-
-        if(!!!cookies.filter(c => c.name === 'SOCS').length){
-            options.cookies.jar.setCookieSync(new Cookie({
-                key: 'SOCS',
-                value: 'CAI',
-                sameSite: 'lax',
-                hostOnly: false,
-                secure: true,
-                path: '/',
-                httpOnly: false,
-                domain: 'youtube.com'
-            }), 'https://www.youtube.com');
-        }
-        options.cookies.jar = addCookiesToJar(cookies, options.cookies.jar);
-
         this.jar = options.cookies.jar;
+        this._options = options;
+
+        if(typeof cookies === 'string') this.syncFile(cookies);
+        else if(!Array.isArray(cookies)) cookies = [];
+        else {
+            if(!!!cookies.filter(c => c.name === 'SOCS').length){
+                options.cookies.jar.setCookieSync(new Cookie({
+                    key: 'SOCS',
+                    value: 'CAI',
+                    sameSite: 'lax',
+                    hostOnly: false,
+                    secure: true,
+                    path: '/',
+                    httpOnly: false,
+                    domain: 'youtube.com'
+                }), 'https://www.youtube.com');
+            }
+            options.cookies.jar = addCookiesToJar(cookies, options.cookies.jar);
+        }
+
         this.agents = {
             https: new HttpsCookieAgent(options),
             http: new HttpCookieAgent(options)
         };
         this.localAddress = options.localAddress;
-        this._options = options;
-        this._cookies = cookies;
+        this._cookies = this.jar.getCookiesSync('https://www.youtube.com')?? [];
+        this.syncedFile = '';
     }
     addCookies(cookies){
         if(!Array.isArray(cookies)) cookies = [];
         if(!(this.jar instanceof CookieJar)) throw new Error(`Jar property is not an instance of CookieJar`);
         this.jar = addCookiesToJar(cookies, this.jar);
+        this._options.cookies.jar = this.jar;
+        if(this.syncedFile.length > 0){
+            fs.writeFileSync(this.syncedFile, JSON.stringify(this.jar.getCookiesSync('https://www.youtube.com'), null, 2));
+        }
     }
     removeCookies(force){
         if(force){
@@ -111,6 +121,22 @@ class YTStreamAgent {
                 http: new HttpCookieAgent(this._options)
             };
         }
+    }
+    syncFile(filePath){
+        if(typeof filePath !== 'string') throw new Error(`Expected the file path to be a type of string, received ${typeof filePath}`);
+        if(path.extname(filePath) !== ".json") throw new Error(`File expected to have .json extension name, received ${path.extname(filePath)}`);
+        if(!path.isAbsolute(filePath)) filePath = path.join(process.cwd(), filePath);
+        if(!fs.existsSync(filePath)) throw new Error(`Couldn't find a file with the path '${filePath}'. Make sure that the file exists and the path is either absolute or relative to the root of the process`);
+        let cookies = fs.readFileSync(filePath);
+        try{
+            cookies = JSON.parse(cookies);
+        } catch {
+            throw new Error(`Cookies from imported file is not a valid json object`);
+        }
+        if(!Array.isArray(cookies)) throw new Error(`Imported cookies expected to be an array, received type of ${typeof cookies}, but no array`);
+        this.syncedFile = filePath;
+        this.jar = addCookiesToJar(cookies, this.jar);
+        this._options.cookies.jar = this.jar;
     }
 }
 
