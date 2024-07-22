@@ -46,7 +46,6 @@ interface Stream extends EventEmitter{
     duration: number;
     type: string;
     req_type: string;
-    per_sec_bytes: number;
     mimeType: string;
     format: {
         itag: number;
@@ -84,13 +83,13 @@ interface YouTubeData{
     title: string;
     description: string;
     embed_url: string;
-    family_safe: boolean;
-    available_countries: [string];
-    category: string;
+    family_safe?: boolean;
+    available_countries?: [string];
+    category?: string;
     thumbnails: [{url: string, width: number, height: number}];
 	default_thumbnail: {url: string, width: number, height: number};
-    uploaded: string;
-    uploadedTimestamp: number;
+    uploaded?: string;
+    uploadedTimestamp?: number;
     duration: number;
     views: number;
     views_text: string;
@@ -119,8 +118,9 @@ interface YouTubeData{
         signatureCipher?: string;
 		codec?: string;
 		container?: string;
+        url?: string;
     }];
-    html5player: string;
+    html5player?: string;
 	user_agent: string;
     cookie: string;
 }
@@ -130,8 +130,8 @@ interface Video{
     url: string;
     title: string;
     author: string;
-    channel_id: string;
-    channel_url: string;
+    channel_id?: string;
+    channel_url?: string;
     length_text: string;
     length: number;
     views_text: string;
@@ -145,8 +145,8 @@ interface PlaylistVideo{
     title: string;
     video_url: string;
     video_id: string;
-    position: number;
-    length_text: string;
+    position?: number;
+    length_text?: string;
     length: number;
     thumbnails: [{url: string, height: number, width: number}];
     default_thumbnail: {url: string, height: number, width: number};
@@ -159,7 +159,7 @@ interface Playlist{
     description: string;
     author: string;
     author_images: [{url: string, height: number, width: number}];
-    default_author_images: {url: string, height: number, width: number};
+    default_author_images?: {url: string, height: number, width: number};
     author_channel: string;
     url: string;
     videos: [PlaylistVideo],
@@ -247,6 +247,18 @@ export declare function setGlobalHeaders(headers: object) : void;
  * @param agent An instance of the YTStreamAgent class which represents the HTTP agent
  */
 export declare function setGlobalAgent(agent: YTStreamAgent | {https: HttpsAgent | HttpsCookieAgent | any, http: HttpAgent | HttpCookieAgent | any} | any) : void;
+
+/**
+ * Allows you to set an api key which can be used to get information instead of scraping pages
+ * @param apiKey Your api key to use
+ */
+export declare function setApiKey(apiKey: string) : void;
+
+/**
+ * Allows you to choose whether to use the api or scraping methods to get information
+ * @param preference The method you prefer
+ */
+export declare function setPreference(preference: 'scrape' | 'api', client?: 'IOS' | 'ANDROID' | 'WEB') : void;
 
 declare var cookie: string;
 declare var userAgent: string;
