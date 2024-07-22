@@ -7,6 +7,12 @@ const { YTStreamAgent } = require('./cookieHandler.js');
 const stream = require('./stream/createstream.js').stream;
 const search = require('./search/index.js').search;
 
+let headers;
+let agent = new YTStreamAgent();
+let APIKey = null;
+let preference = "scrape";
+let client = null;
+
 class YTStream{
   constructor(){
     this.validateURL = (...args) => {
@@ -42,37 +48,63 @@ class YTStream{
     this.search = (...args) => {
       return search(this, ...args);
     };
-    this.setGlobalAgent = (agent) => {
-      if(typeof agent === 'object'){
-        if(agent instanceof YTStreamAgent){
-          this.agent = agent;
+    this.setGlobalAgent = (_agent) => {
+      if(typeof _agent === 'object'){
+        if(_agent instanceof YTStreamAgent){
+          agent = _agent;
         } else {
-          this.agent = {
+          agent = {
             agents: {},
             jar: new CookieJar()
           };
-          if(typeof agent.https === 'object' || typeof agent.http === 'object'){
-            this.agent.agents['https'] = agent.https ?? agent.http;
-            this.agent.agents['http'] = agent.http ?? agent.https;
+          if(typeof _agent.https === 'object' || typeof _agent.http === 'object'){
+            agent.agents['https'] = _agent.https ?? _agent.http;
+            agent.agents['http'] = _agent.http ?? _agent.https;
           } else {
-            this.agent.agents['https'] = agent;
-            this.agent.agents['http'] = agent;
+            agent.agents['https'] = _agent;
+            agent.agents['http'] = _agent;
           }
         }
       } else throw new Error(`Agent is not a valid agent`);
     };
-    this.setGlobalHeaders = (headers) => {
-      if(typeof headers !== 'object' || Array.isArray(headers) || headers === null) throw new Error(`Invalid headers. Headers must be a type of object and may not be an Array or null.`);
-      this.headers = {};
-      for(const header in headers){
-        this.headers[header] = headers[header];
+    this.setGlobalHeaders = (_headers) => {
+      if(typeof _headers !== 'object' || Array.isArray(_headers) || _headers === null) throw new Error(`Invalid headers. Headers must be a type of object and may not be an Array or null.`);
+      _headers = {};
+      for(const header in _headers){
+        headers[header] = _headers[header];
       }
     }
-		this.userAgent = null;
-    this.headers = {};
+    this.setApiKey = (apiKey) => {
+      if(typeof apiKey !== 'string') throw new Error(`API key must be a type of string. Received type of ${typeof apiKey}`);
+      APIKey = apiKey;
+    }
+    this.setPreference = (_preference, _client) => {
+      if(typeof _preference !== 'string') throw new Error(`Preference must be a type of string. Received type of ${typeof _preference}`);
+      if(['scrape', 'api'].indexOf(_preference.toLowerCase()) < 0) throw new Error(`Preference must be either 'scrape' or 'api'. Received ${_preference}`);
+      if(typeof _client === 'string'){
+        if(['IOS', 'ANDROID', 'WEB'].indexOf(_client.toUpperCase()) < 0) throw new Error(`Client must be one of IOS, ANDROID or WEB. Received ${_client}`);
+        client = _client.toUpperCase();
+      }
+      preference = _preference.toLowerCase();
+    }
     this.Cookie = Cookie;
     this.YTStreamAgent = YTStreamAgent;
-    this.agent = new YTStreamAgent();
+    this.userAgent = null;
+  }
+  get agent(){
+    return agent;
+  }
+  get headers(){
+    return headers;
+  }
+  get apiKey(){
+    return APIKey;
+  }
+  get preference(){
+    return preference;
+  }
+  get client(){
+    return client;
   }
 }
 
