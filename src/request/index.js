@@ -23,7 +23,7 @@ function handleCookies(res, agent){
   if(cookieIndex >= 0){
     const cookies = headerValues[cookieIndex];
     if(typeof cookies === 'string'){
-      agent.addCookies(Cookie.parse(cookies));
+      agent.addCookies([Cookie.parse(cookies)]);
     } else if(Array.isArray(cookies)){
       agent.addCookies(cookies.map(c => Cookie.parse(c)));
     }
@@ -83,6 +83,10 @@ function request(_url, options, agent, retryCount = 0, force = false){
       reject(error);
     });
 
+    if(typeof options.body === 'string'){
+      req.write(options.body);
+    }
+
     req.end();
   });
 }
@@ -110,16 +114,24 @@ function requestCallback(_url, options, agent, parsedOnly = false){
           const req = prreq.request(http_options, stream => resolve({stream, req: req}));
 
           req.on('error', error => {
-              reject(error);
+            reject(error);
           });
+
+          if(typeof options.body === 'string'){
+            req.write(options.body);
+          }
 
           req.end();
         } else {
           const req = prreq.request(url, stream => resolve({stream, req: req}));
 
           req.on('error', error => {
-              reject(error);
+            reject(error);
           });
+
+          if(typeof options.body === 'string'){
+            req.write(options.body);
+          }
 
           req.end();
         }
