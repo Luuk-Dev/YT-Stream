@@ -6,6 +6,17 @@ npm install yt-stream
 ## What is YT-Stream?
 YT-Stream is a package which can download and search YouTube video's. YT-Stream is based on the codes of [ytdl-core](https://npmjs.com/ytdl-core) and [play-dl](https://npmjs.com/play-dl) and further extended to create a package which met to my needs.
 
+## API or scrape methods
+YT-Stream allows both API (youtubei) and scrape methods to be used. By default the scrape method will always be used. To change this, an api key is required, which can be obtained from the [Google Developer Console](https://console.cloud.google.com/apis/dashboard) (YouTube Data API v3). This api key can be set by using the `setApiKey` function. This function requires one argument, which is the api key. Setting the api key does not automatically make the package use the api instead of the scrape method. This must be set by using the `setPreference` function. This function requires one argument, which is the method, and has an optional argument, which is the client which the package should use when making an api request. YT-Stream allows you to make an api request with a IOS, Android or web client, which can be manually set inside the second argument of the `setPreference` function. By default, a random client will be choosen. The client which the package uses does have impact on the data it can receive. If you have application restrictions enabled for your api key, you need to set a client manually.
+```js
+const ytstream = require('yt-stream');
+
+ytstream.setApiKey(`My Secret api key`); // Only sets the api key
+ytstream.setPreference('api', 'WEB'); // Tells the package to use the api and use a web client for requests
+...
+ytstream.setPreference('scrape'); // Tells the package to use the scrape methods instead of the api, even if an api key has been provided
+```
+
 ## Downloading
 You can download a video by using the `stream` function. The `stream` function has two parameters; the `info` or `url` parameter and the `options` parameter. The `options` parameter is not required. The first parameter must include the video url or the info that has been received from the `info` function. The `stream` function will return a `Promise`. The `Promise` will be fullfilled if the video was successfully downloaded. If there was an error, the `Promise` will be rejected with the error. Once the `Promise` gets fullfilled it will return the `Stream` class. The most important properties in the `Stream` class are:
 * stream: The Readable stream
