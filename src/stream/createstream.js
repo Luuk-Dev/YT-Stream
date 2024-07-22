@@ -92,16 +92,22 @@ function stream(ytstream, info, options){
             if(!validate(ytstream, info)) return reject(`URL is not a valid YouTube URL`);
             try{
                 _info = await getInfo(ytstream, info);
-                const _ci = await cipher.format_decipher(_info.formats, _info.html5player, ytstream.agent);
-                _info.formats = _ci;
+                if(typeof _info.clientInfo === 'object' && _info.clientInfo !== null) _info.formats.map(f => f.url += "&cver="+_info.clientInfo.context.client.clientVersion)
+                else {
+                    const _ci = await cipher.format_decipher(_info.formats, _info.html5player, ytstream.agent);
+                    _info.formats = _ci;
+                }
                 stream_res = await getStreamURL(_info, _options);
             } catch (err) {
                 return reject(err);
             }
         } else if(info instanceof Data){
             try{
-                const _ci = await cipher.format_decipher(_info.formats, _info.html5player, ytstream.agent);
-                _info.formats = _ci;
+                if(typeof _info.clientInfo === 'object' && _info.clientInfo !== null) _info.formats.map(f => f.url += "&cver="+_info.clientInfo.context.client.clientVersion)
+                else {
+                    const _ci = await cipher.format_decipher(_info.formats, _info.html5player, ytstream.agent);
+                    _info.formats = _ci;
+                }
                 stream_res = await getStreamURL(_info, _options);
             } catch (err) {
                 return reject(err);
@@ -125,6 +131,10 @@ function stream(ytstream, info, options){
         } else {
             stream.once('ready', () => {
                 resolve(stream);
+            });
+
+            stream.once('error', err => {
+                reject(err);
             });
         }
     });
