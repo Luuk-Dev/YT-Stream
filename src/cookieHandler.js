@@ -19,10 +19,14 @@ function toDate(cookie){
 
 function addCookiesToJar(cookies, jar){
     for(const cookie of cookies){
-        if(cookie instanceof Cookie) jar.setCookieSync(cookie, 'https://www.youtube.com');
+        if(cookie instanceof Cookie){
+            if(cookie.domain !== 'youtube.com' && cookie.domain !== '.youtube.com') continue;
+            jar.setCookieSync(cookie, 'https://www.youtube.com');
+        }
         else if(typeof cookie === 'object' && !Array.isArray(cookie) && cookie !== null){
             if(typeof cookie.key !== 'string' && typeof cookie.name !== 'string') throw new Error(`Invalid cookie. A cookie must have a key or name.`);
             if(typeof cookie.domain !== 'string') throw new Error(`Invalid cookie. A cookie must have a domain.`);
+            if(cookie.domain !== 'youtube.com' && cookie.domain !== '.youtube.com') continue;
             jar.setCookieSync(new Cookie({
                 key: cookie.key ?? cookie.name,
                 value: typeof cookie.value === 'string' ? cookie.value : "",
@@ -53,9 +57,9 @@ class YTStreamAgent {
 
         if(typeof cookies === 'string') this.syncFile(cookies);
         else if(!Array.isArray(cookies)) cookies = [];
-        else {
+        if(Array.isArray(cookies)){
             if(!!!cookies.filter(c => c.name === 'SOCS').length){
-                options.cookies.jar.setCookieSync(new Cookie({
+                const templates = [{
                     key: 'SOCS',
                     value: 'CAI',
                     sameSite: 'lax',
@@ -64,7 +68,18 @@ class YTStreamAgent {
                     path: '/',
                     httpOnly: false,
                     domain: 'youtube.com'
-                }), 'https://www.youtube.com');
+                }, {
+                    key: 'CONSENT',
+                    value: 'PENDING+'+(Math.round(Math.random() * 400) + 1).toString(),
+                    sameSite: 'None',
+                    hostOnly: false,
+                    secure: true,
+                    path: '/',
+                    httpOnly: false,
+                    domain: 'youtube.com',
+                    expires: 'Infinity'
+                }];
+                templates.forEach(t => options.cookies.jar.setCookieSync(new Cookie(t), 'https://www.youtube.com'));
             }
             options.cookies.jar = addCookiesToJar(cookies, options.cookies.jar);
         }
@@ -74,8 +89,8 @@ class YTStreamAgent {
             http: new HttpCookieAgent(options)
         };
         this.localAddress = options.localAddress;
-        this._cookies = this.jar.getCookiesSync('https://www.youtube.com')?? [];
-        this.syncedFile = '';
+        this._cookies = this.jar.getCookiesSync('https://www.youtube.com') ?? [];
+        if(typeof cookies !== 'string') this.syncedFile = '';
     }
     addCookies(cookies){
         if(!Array.isArray(cookies)) cookies = [];
@@ -102,7 +117,7 @@ class YTStreamAgent {
             }
     
             if(!!!this._cookies.filter(c => c.name === 'SOCS').length){
-                this._options.cookies.jar.setCookieSync(new Cookie({
+                const templates = [{
                     key: 'SOCS',
                     value: 'CAI',
                     sameSite: 'lax',
@@ -111,7 +126,18 @@ class YTStreamAgent {
                     path: '/',
                     httpOnly: false,
                     domain: 'youtube.com'
-                }), 'https://www.youtube.com');
+                }, {
+                    key: 'CONSENT',
+                    value: 'PENDING+'+(Math.round(Math.random() * 400) + 1).toString(),
+                    sameSite: 'None',
+                    hostOnly: false,
+                    secure: true,
+                    path: '/',
+                    httpOnly: false,
+                    domain: 'youtube.com',
+                    expires: 'Infinity'
+                }];
+                templates.forEach(t => this._options.cookies.jar.setCookieSync(new Cookie(t), 'https://www.youtube.com'));
             }
             this._options.cookies.jar = addCookiesToJar(this._cookies, this._options.cookies.jar);
     
