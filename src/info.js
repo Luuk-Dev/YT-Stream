@@ -78,7 +78,7 @@ function getInfo(ytstream, url, force = false){
         let jsonObject = (seperate[0] + "}}").split('\\"').join('\"').split("\\'").join("\'").split("\\`").join("\`");
         let splitVars = jsonObject.split(/['|"|`]playerVars['|"|`]:/);
         while(splitVars.length > 1){
-          jsonObject = splitVars[0] + splitVars.slice(1).join("\"playersVars\":").split(/}}['|"|`],/).slice(1).join("}}\",");
+          jsonObject = splitVars[0] + splitVars.slice(1).join("\"playerVars\":").split(/}}['|"|`],/).slice(1).join("}}\",");
           splitVars = jsonObject.split(/['|"|`]playerVars['|"|`]:/);
         }
         let data;
