@@ -258,7 +258,7 @@ export declare function setApiKey(apiKey: string) : void;
  * Allows you to choose whether to use the api or scraping methods to get information
  * @param preference The method you prefer
  */
-export declare function setPreference(preference: 'scrape' | 'api', client?: 'IOS' | 'ANDROID' | 'WEB') : void;
+export declare function setPreference(preference: 'scrape' | 'api', client?: 'IOS' | 'ANDROID') : void;
 
 declare var cookie: string;
 declare var userAgent: string;
