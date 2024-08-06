@@ -68,7 +68,7 @@ class Stream extends EventEmitter{
         if(this.ytstream.agent instanceof YTStreamAgent) this.ytstream.agent.removeCookies(false);
         const info = await getInfo(this.ytstream, this.video_url, true);
         
-        const _ci = await cipher.format_decipher(info.formats, info.html5player, this.ytstream.agent);
+        const _ci = await cipher.format_decipher(info.formats, info.cver, info.html5player, this.ytstream.agent);
 
         info.formats = _ci;
 
@@ -79,7 +79,7 @@ class Stream extends EventEmitter{
         this.url = typeof this.quality === 'number' ? (audioFormat[this.quality] ? audioFormat[this.quality].url : audioFormat[audioFormat.length - 1].url) : audioFormat[0].url;
         this.loop();
     }
-    async loop(){    
+    async loop(){
         let parsed = new URL(this.url);
         
         try{
@@ -88,7 +88,7 @@ class Stream extends EventEmitter{
             }, this.ytstream.agent, 0, true);
         } catch {
             ++this.retryCount;
-            if(this.retryCount >= 10){
+            if(this.retryCount >= 5){
                 return this.emit('error', 'Failed to get valid content');
             } else return this.loop();
         }
@@ -101,7 +101,7 @@ class Stream extends EventEmitter{
         }, this.ytstream.agent, false).then(async ({stream, req}) => {
             this.req = req;
             if(Number(stream.statusCode) >= 400){
-                if(this.retryCount >= 10){
+                if(this.retryCount >= 5){
                     return this.emit('error', 'No valid download url\'s could be found for the YouTube video');
                 } else {
                     ++this.retryCount;
