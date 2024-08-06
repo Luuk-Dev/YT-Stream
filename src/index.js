@@ -10,7 +10,7 @@ const search = require('./search/index.js').search;
 let headers;
 let agent = new YTStreamAgent();
 let APIKey = null;
-let preference = "scrape";
+let preference = "api";
 let client = null;
 
 class YTStream{
@@ -82,7 +82,7 @@ class YTStream{
       if(typeof _preference !== 'string') throw new Error(`Preference must be a type of string. Received type of ${typeof _preference}`);
       if(['scrape', 'api'].indexOf(_preference.toLowerCase()) < 0) throw new Error(`Preference must be either 'scrape' or 'api'. Received ${_preference}`);
       if(typeof _client === 'string'){
-        if(['IOS', 'ANDROID', 'WEB'].indexOf(_client.toUpperCase()) < 0) throw new Error(`Client must be one of IOS, ANDROID or WEB. Received ${_client}`);
+        if(['IOS', 'ANDROID'].indexOf(_client.toUpperCase()) < 0) throw new Error(`Client must be one of IOS or ANDROID. Received ${_client}`);
         client = _client.toUpperCase();
       }
       preference = _preference.toLowerCase();
