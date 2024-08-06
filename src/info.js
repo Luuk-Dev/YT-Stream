@@ -13,6 +13,20 @@ function getHTML5player(response){
   return html5playerRes ? html5playerRes[1] || html5playerRes[2] : null;
 };
 
+function getCver(response){
+  let startCver = response.split(/["|'|`]key["|'|`]:["|'|`]cver["|'|`],["|'|`]value["|'|`]:["|'|`]/);
+  return startCver[1].split(/["|'|`]/)[0];
+}
+
+function genNonce(length){
+  let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
+  let nonce = "";
+  while(nonce.length < length){
+    nonce += chars[Math.round(Math.random() * (chars.length - 1))];
+  }
+  return nonce;
+}
+
 function getInfo(ytstream, url, force = false){
   return new Promise((resolve, reject) => {
     if(typeof url !== 'string') throw new Error(`URL is not a string`);
@@ -56,24 +70,18 @@ function getInfo(ytstream, url, force = false){
         let res = response.split('var ytInitialPlayerResponse = ')[1];
         let html5path = getHTML5player(response);
         const html5player = typeof html5path === 'string' ? `https://www.youtube.com${html5path}` : null;
+        let cver = getCver(response);
         if(!res){
-          reject(`The YouTube song has no initial player response`);
-          return;
+          return reject(`The YouTube song has no initial player response (1)`);
         }
         res = res.split(';</script>')[0];
         if(!res){
-          reject(`The YouTube song has no initial player response`);
-          return;
+          return reject(`The YouTube song has no initial player response (2)`);
         }
         try{
           res = decodeURI(res);
         } catch {}
         res = res.split(`\\"`).join("");
-        res = res.split(`,"interpreterSafeScript"`)[0];
-        if(!res){
-          reject(`The YouTube song has no initial player response`);
-          return;
-        }
         let seperate = res.split(/}};[a-z]/);
         let jsonObject = (seperate[0] + "}}").split('\\"').join('\"').split("\\'").join("\'").split("\\`").join("\`");
         let splitVars = jsonObject.split(/['|"|`]playerVars['|"|`]:/);
@@ -85,23 +93,21 @@ function getInfo(ytstream, url, force = false){
         try{
           data = JSON.parse(jsonObject);
         } catch {
-          reject(`The YouTube song has no initial player response`);
-          return;
+          return reject(`The YouTube song has no initial player response (3)`);
         }
         if(data.playabilityStatus.status !== 'OK'){
           let error = data.playabilityStatus.errorScreen.playerErrorMessageRenderer ? data.playabilityStatus.errorScreen.playerErrorMessageRenderer.reason.simpleText : data.playabilityStatus.errorScreen.playerKavRenderer.reason.simpleText;
 
           reject(`Error while getting video url\n${error}`);
-        } else resolve(new YouTubeData(data, html5player, headers, null));
+        } else resolve(new YouTubeData(data, cver, html5player, headers, null));
       }).catch(err => {
         reject(err);
       });
     } else if(ytstream.preference === 'api'){
-      if(typeof ytstream.apiKey !== 'string') return reject(`No valid API key has been set`);
-
       const clientInfo = genClientInfo(ytid, ytstream.client);
 
-      request('https://www.youtube.com/youtubei/v1/player?key='+ytstream.apiKey+'&prettyPrint=false', {
+      let endPoint = 'https://www.youtube.com/youtubei/v1/player' + (typeof ytstream.apiKey === 'string' ? '?key='+ytstream.apiKey : '?t='+genNonce(12))+'&prettyPrint=false&id='+ytid;
+      request(endPoint, {
         method: 'POST',
         body: JSON.stringify(clientInfo.body),
         headers: clientInfo.headers
@@ -116,7 +122,7 @@ function getInfo(ytstream, url, force = false){
         if(data.playabilityStatus.status !== 'OK'){
           return reject(data.playabilityStatus.reason);
         }
-        resolve(new YouTubeData(data, null, clientInfo.headers, clientInfo.body));
+        resolve(new YouTubeData(data, clientInfo.body.context.client.clientVersion, null, clientInfo.headers, clientInfo.body));
       }).catch(reject);
     }
   });
