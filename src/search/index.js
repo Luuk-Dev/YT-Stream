@@ -21,6 +21,15 @@ function toFullNumber(n){
   return numbers;
 }
 
+function genNonce(length){
+  let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
+  let nonce = "";
+  while(nonce.length < length){
+    nonce += chars[Math.round(Math.random() * (chars.length - 1))];
+  }
+  return nonce;
+}
+
 function transformApiData(videoCard){
   let viewsMetaData = videoCard.videoData.metadata.metadataDetails.split(" ");
   let filterViews = viewsMetaData.filter(v => /^[0-9.]+[KMB]{0,1}$/.test(v) && v.length > 1);
@@ -171,11 +180,10 @@ function search(ytstream, query, options){
         reject(err);
       });
     } else if(ytstream.preference === 'api'){
-      if(typeof ytstream.apiKey !== 'string') return reject(`No valid API key has been set`);
-
       const clientInfo = genClientInfo(undefined, ytstream.client);
 
-      request('https://www.youtube.com/youtubei/v1/search?key='+ytstream.apiKey+'&prettyPrint=false', {
+      let endPoint = 'https://www.youtube.com/youtubei/v1/search' + (typeof ytstream.apiKey === 'string' ? '?key='+ytstream.apiKey : '?t='+genNonce(12))+'&prettyPrint=false';
+      request(endPoint, {
         method: 'POST',
         body: JSON.stringify({
           ...clientInfo.body,
