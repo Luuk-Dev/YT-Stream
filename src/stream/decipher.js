@@ -1,15 +1,15 @@
-const { URLSearchParams } = require('url');
-const { request } = require(`../request/index.js`);
+const { URLSearchParams, URL } = require('url');
+const { request } = require('../request/index.js');
 const vm = require('vm');
 
 async function getFunctions(html5playerfile, options){
-  const body = await request(html5playerfile, options, options.agent);
+  const body = await request(html5playerfile, options, options.agent, 0, true);
   const functions = extractFunctions(body);
   return functions;
 };
 
 const DECIPHER_NAME_REGEXPS = [
-  '\\bm=([a-zA-Z0-9$]{2,})\\(decodeURIComponent\\(h\\.s\\)\\);',
+  '\\bm=([a-zA-Z0-9$]{2,})\\(decodeURIComponent\\(h\\.s\\)\\)',
   '\\bc&&\\(c=([a-zA-Z0-9$]{2,})\\(decodeURIComponent\\(c\\)\\)',
   '(?:\\b|[^a-zA-Z0-9$])([a-zA-Z0-9$]{2,})\\s*=\\s*function\\(\\s*a\\s*\\)\\s*\\{\\s*a\\s*=\\s*a\\.split\\(\\s*""\\s*\\)',
   '([\\w$]+)\\s*=\\s*function\\((\\w+)\\)\\{\\s*\\2=\\s*\\2\\.split\\(""\\)\\s*;',
@@ -38,6 +38,33 @@ const HELPER_REGEXP = `var (${VARIABLE_PART})=\\{((?:(?:${
   VARIABLE_PART_DEFINE}${SPLICE_PART}|${
   VARIABLE_PART_DEFINE}${SWAP_PART}),?\\n?)+)\\};`;
 
+const SCVR = '[a-zA-Z0-9$_]';
+const FNR = `${SCVR}+`;
+const AAR = '\\[(\\d+)]';
+const N_TRANSFORM_NAME_REGEXPS = [
+  `${SCVR}+="nn"\\[\\+${
+    SCVR}+\\.${SCVR}+],${
+    SCVR}+=${SCVR
+  }+\\.get\\(${SCVR}+\\)\\)&&\\(${
+    SCVR}+=(${SCVR
+  }+)\\[(\\d+)]`,
+  `${SCVR}+="nn"\\[\\+${
+    SCVR}+\\.${SCVR}+],${
+    SCVR}+=${SCVR}+\\.get\\(${
+    SCVR}+\\)\\).+\\|\\|(${SCVR
+  }+)\\(""\\)`,
+  `\\(${SCVR}=String\\.fromCharCode\\(110\\),${
+    SCVR}=${SCVR}\\.get\\(${
+    SCVR}\\)\\)&&\\(${SCVR
+  }=(${FNR})(?:${AAR})?\\(${
+    SCVR}\\)`,
+  `\\.get\\("n"\\)\\)&&\\(${SCVR
+  }=(${FNR})(?:${AAR})?\\(${
+    SCVR}\\)`,
+  '(\\w+).length\\|\\|\\w+\\(""\\)',
+  '\\w+.length\\|\\|(\\w+)\\(""\\)',
+];
+
 const N_TRANSFORM_REGEXP = 'function\\(\\s*(\\w+)\\s*\\)\\s*\\{' +
   'var\\s*(\\w+)=(?:\\1\\.split\\(""\\)|String\\.prototype\\.split\\.call\\(\\1,""\\)),' +
   '\\s*(\\w+)=(\\[.*?]);\\s*\\3\\[\\d+]' +
@@ -45,35 +72,31 @@ const N_TRANSFORM_REGEXP = 'function\\(\\s*(\\w+)\\s*\\)\\s*\\{' +
   '{\\s*return"enhanced_except_([A-z0-9-]+)"\\s*\\+\\s*\\1\\s*}' +
   '\\s*return\\s*(\\2\\.join\\(""\\)|Array\\.prototype\\.join\\.call\\(\\2,""\\))};';
 
-function matchRegex (regex, str){
+function matchRegex(regex, str){
   const match = str.match(new RegExp(regex, 's'));
   if (!match) throw new Error(`Could not match ${regex}`);
   return match;
 };
 
-function matchFirst(regex, str){
-  return matchRegex(regex, str)[0];
-}
+const matchFirst = (regex, str) => matchRegex(regex, str)[0];
 
-function matchGroup1(regex, str){
-  return matchRegex(regex, str)[1];
-}
+const matchGroup1 = (regex, str) => matchRegex(regex, str)[1];
 
 function getFuncName(body, regexps){
   let fn;
   for (const regex of regexps) {
     try {
       fn = matchGroup1(regex, body);
-      const idx = fn.indexOf('[0]');
-      if (idx > -1) {
-        fn = matchGroup1(`${fn.substring(idx, 0).replace(/\$/g, '\\$')}=\\[([a-zA-Z0-9$\\[\\]]{2,})\\]`, body);
+      try {
+        fn = matchGroup1(`${fn.replace(/\$/g, '\\$')}=\\[([a-zA-Z0-9$\\[\\]]{2,})\\]`, body);
+      } catch (err) {
       }
       break;
     } catch (err) {
       continue;
     }
   }
-  if (!fn || fn.includes('[')) throw new Error(`Unable to match function name`);
+  if (!fn || fn.includes('[')) throw Error();
   return fn;
 };
 
@@ -81,8 +104,8 @@ function extractDecipherFunc(body){
   try {
     const helperObject = matchFirst(HELPER_REGEXP, body);
     const decipherFunc = matchFirst(DECIPHER_REGEXP, body);
-    const resultFunc = `var decipher=${decipherFunc};`;
-    const callerFunc = `decipher(sig);`;
+    const resultFunc = `var decipherFunc=${decipherFunc};`;
+    const callerFunc = `decipherFunc(sig);`;
     return helperObject + resultFunc + callerFunc;
   } catch (e) {
     return null;
@@ -126,14 +149,30 @@ function extractDecipher(body){
 function extractNTransformFunc(body){
   try {
     const nFunc = matchFirst(N_TRANSFORM_REGEXP, body);
-    return `var transform=${nFunc}` + `transform(n);`;
+    const resultFunc = `var nTransformFunc=${nFunc}`;
+    const callerFunc = `nTransformFunc(n);`;
+    return resultFunc + callerFunc;
+  } catch (e) {
+    return null;
+  }
+};
+
+function extractNTransformWithName(body){
+  try {
+    const nFuncName = getFuncName(body, N_TRANSFORM_NAME_REGEXPS);
+    const funcPattern = `(${
+      nFuncName.replace(/\$/g, '\\$')
+    }=\\s*function([\\S\\s]*?\\}\\s*return (([\\w$]+?\\.join\\(""\\))|(Array\\.prototype\\.join\\.call\\([\\w$]+?,[\\n\\s]*(("")|(\\("",""\\)))\\)))\\s*\\}))`;
+    const nTransformFunc = `var ${matchGroup1(funcPattern, body)};`;
+    const callerFunc = `${nFuncName}(n);`;
+    return nTransformFunc + callerFunc;
   } catch (e) {
     return null;
   }
 };
 
 function extractNTransform(body){
-  const nTransformFunc = getExtractFunctions([extractNTransformFunc], body);
+  const nTransformFunc = getExtractFunctions([extractNTransformFunc, extractNTransformWithName], body);
   if (!nTransformFunc) return null;
   return nTransformFunc;
 };
@@ -141,17 +180,26 @@ function extractNTransform(body){
 function extractFunctions(body){
   return [
     extractDecipher(body),
-    extractNTransform(body)
+    extractNTransform(body),
   ];
 }
 
-function setDownloadURL(format, decipherScript, nTransformScript){
+function genCPN(length){
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890_-';
+  let cpn = "";
+  while(cpn.length < length){
+    cpn += chars[Math.round(Math.random() * (chars.length - 1))];
+  }
+  return cpn;
+}
+
+function setDownloadURL(format, decipherScript, nTransformScript, cver){
   if (!decipherScript) return;
   const decipher = url => {
     const args = new URLSearchParams(url);
     if (!args.has('s')) return args.get('url');
     const components = new URL(decodeURIComponent(args.get('url')));
-    components.searchParams.set(args.get('sp') || 'sig', decipherScript.runInNewContext({sig: decodeURIComponent(args.get('s'))}));
+    components.searchParams.set(args.sp || 'sig', decipherScript.runInNewContext({sig: decodeURIComponent(args.get('s'))}));
     return components.toString();
   };
   const nTransform = url => {
@@ -163,21 +211,20 @@ function setDownloadURL(format, decipherScript, nTransformScript){
   };
   const cipher = !format.url;
   const url = format.url || format.signatureCipher || format.cipher;
-  format.url = cipher ? nTransform(decipher(url)) : nTransform(url);
+  
+  format.url = nTransform(cipher ? decipher(url) : url);
   delete format.signatureCipher;
   delete format.cipher;
 };
 
-function format_decipher(formats, html5player, agent){
-  return new Promise(async resolve => {
-    const [decipherScript, nTransformScript] = await getFunctions(html5player, {headers: {cookie: agent.jar.getCookieStringSync('https://www.youtube.com')}, agent});
-    for(let format of formats){
-      setDownloadURL(format, decipherScript, nTransformScript);
-    };
-    resolve(formats);
-  });
+async function format_decipher(formats, cver, html5player, agent){
+  const [decipherScript, nTransformScript] = await getFunctions(html5player, {headers: {cookie: agent.jar.getCookieStringSync('https://www.youtube.com')}, agent: agent});
+  for(let format of formats){
+    format = setDownloadURL(format, decipherScript, nTransformScript, cver);
+  }
+  return formats;
 };
 
 module.exports = {
   format_decipher
-}
+};
