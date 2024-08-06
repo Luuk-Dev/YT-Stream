@@ -6,6 +6,15 @@ const { getID } = require("./convert.js");
 const Playlist = require("./classes/playlist.js");
 const genClientInfo = require('./genClient.js');
 
+function genNonce(length){
+    let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
+    let nonce = "";
+    while(nonce.length < length){
+      nonce += chars[Math.round(Math.random() * (chars.length - 1))];
+    }
+    return nonce;
+}
+
 function getPlaylist(ytstream, url){
     return new Promise(async (resolve, reject) => {
         if(!validatePlaylistURL(ytstream, url)) throw new Error(`Invalid YouTube playlist url`);
@@ -64,11 +73,10 @@ function getPlaylist(ytstream, url){
             if(errors.length > 0) return reject(errors[0].alertRenderer.text.runs[0].text);
             resolve(new Playlist(json, headers, listId));
         } else if(ytstream.preference === 'api'){
-            if(typeof ytstream.apiKey !== 'string') return reject(`No valid API key has been set`);
-
             const clientInfo = genClientInfo(undefined, ytstream.client);
 
-            request('https://www.youtube.com/youtubei/v1/browse?apiKey='+ytstream.apiKey+'&prettyPrint=false', {
+            let endPoint = 'https://www.youtube.com/youtubei/v1/browse' + (typeof ytstream.apiKey === 'string' ? '?key='+ytstream.apiKey : '?t='+genNonce(12))+'&prettyPrint=false';
+            request(endPoint, {
                 method: 'POST',
                 body: JSON.stringify({...clientInfo.body, browseId: !listId.startsWith("VL") ? `VL${listId}` : listId}),
                 headers: clientInfo.headers
@@ -77,8 +85,8 @@ function getPlaylist(ytstream, url){
                 try{
                 data = JSON.parse(res);
                 } catch {
-                reject(`Invalid response from the YouTube API`);
-                return;
+                    reject(`Invalid response from the YouTube API`);
+                    return;
                 }
                 resolve(new Playlist(data, clientInfo.headers, listId));
             }).catch(reject);
