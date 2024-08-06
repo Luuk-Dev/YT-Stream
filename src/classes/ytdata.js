@@ -1,5 +1,5 @@
 class YouTubeData{
-    constructor(data, html5player, headers, clientInfo){
+    constructor(data, cver, html5player, headers, clientInfo){
         let videoDetails = data.videoDetails;
         this.id = videoDetails.videoId;
         this.url = `https://www.youtube.com/watch?v=${videoDetails.videoId}`;
@@ -59,6 +59,8 @@ class YouTubeData{
         } else {
             this.cookie = null;
         }
+        this.cver = cver;
+        this.streamingURL = data.streamingData.serverAbrStreamingUrl;
     }
 }
 
