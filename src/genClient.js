@@ -1,4 +1,3 @@
-const webUserAgents = require('./request/useragent.js');
 const androidUserAgents = [{
     agent: 'com.google.android.youtube/19.28.35(Linux; U; Android 13; en_US; sdk_gphone64_x86_64 Build/UPB4.230623.005) gzip',
     clientVersion: '19.28.35',
@@ -25,15 +24,27 @@ const iosUserAgents = [{
     clientVersion: '18.06.35',
     deviceModel: 'iPhone10,6'
 }, {
-    agent: 'com.google.ios.youtube/19.09.3 (iPhone14,3; U; CPU iOS 15_6 like Mac OS X)',
+    agent: 'com.google.ios.youtube/19.09.3 (iPhone14,3; U; CPU iOS 15_6 like Mac OS X en_US)',
     clientVersion: '19.09.3',
     deviceModel: 'iPhone14,3'
+}, {
+    agent: 'com.google.ios.youtube/19.28.1 (iPhone16,2; U; CPU IOS 17_5_1 like Mac OS X; en_US)',
+    clientVersion: '19.28.1',
+    deviceModel: 'iPhone16,2'
 }];
-const cver = ['2.20240719.00.00', '2.20240111.09.00'];
+
+function genNonce(length){
+    let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
+    let nonce = "";
+    while(nonce.length < length){
+      nonce += chars[Math.round(Math.random() * (chars.length - 1))];
+    }
+    return nonce;
+}
 
 function genClientInfo(videoId, preferedClient){
 
-    const clientTypes = ['WEB', 'ANDROID', 'IOS'];
+    const clientTypes = ['ANDROID', 'IOS'];
     const client = preferedClient ?? clientTypes[Math.round(Math.random() * (clientTypes.length - 1))];
 
     let headers = {
@@ -41,13 +52,14 @@ function genClientInfo(videoId, preferedClient){
         'x-youtube-client-version': '',
         'origin': 'https://www.youtube.com',
         'user-agent': '',
-        'Ccntent-type': 'application/json'
+        'content-type': 'application/json'
     };
     
     let userAgent, clientVersion;
     let contextBuilder = {
         context: {
             client: {
+                cpn: genNonce(16),
                 clientName: client,
                 clientVersion: undefined,
                 deviceModel: undefined,
@@ -84,12 +96,6 @@ function genClientInfo(videoId, preferedClient){
         };
     }
     switch(client){
-        case 'WEB':
-            userAgent = webUserAgents.getRandomUserAgent()
-            clientVersion = cver[Math.round(Math.random() * (cver.length - 1))];
-            headers['x-youtube-client-name'] = '1';
-            contextBuilder.context.client.deviceModel = 'Windows NT 10.0';
-            break;
         case 'ANDROID':
             let androidRandomAgent = androidUserAgents[Math.round(Math.random() * (androidUserAgents.length - 1))];
             userAgent = androidRandomAgent.agent;
